@@ -106,6 +106,7 @@ def Userwindow():
             UtextPicture = Entry(user_show_info)
             UlabelPicture.grid(row=7, column=0, padx=60, pady = 3)
             UtextPicture.grid(row=7, column=1, padx=70, pady = 3)
+            # 사진 제외?
 
             UlabelRent = Label(user_show_info, text="대출여부 : ", fg = "#203864", bg = "white")
             UtextRent = Entry(user_show_info)
@@ -119,6 +120,9 @@ def Userwindow():
 
             user_revice_btn = Button(user_show_info, text="수정")
             user_revice_btn.grid(row=10, column=0,padx=60, pady = 5)
+
+            user_delete_btn = Button(user_show_info, text="탈퇴")
+            user_delete_btn.grid(row=10, column=1, padx=60, pady = 5)
 
             Uexit_btn = Button(user_show_info, text="닫기", command=lambda: usershow.destroy())
             Uexit_btn.grid(row=10, column=2, padx=70, pady = 5)
@@ -165,6 +169,7 @@ def Userwindow():
         Upicture_text = Entry(user_add, width = 50) 
         Upicture_label.grid(row=6, column=0, padx=10, pady = 5)
         Upicture_text.grid(row=6, column=1, padx=50, pady = 5)
+        # 사진 제외?
         
         Upicture_search_btn = Button(user_add, text="찾기")
         Upicture_search_btn.grid(row=6, column=2, padx=20, pady = 5)
@@ -287,6 +292,9 @@ def Bookwindow():
             book_revice_btn = Button(book_show_info, text="수정")
             book_revice_btn.grid(row=10, column=0,padx=60, pady = 5)
 
+            book_delete_btn = Button(book_show_info, text="삭제")
+            book_delete_btn.grid(row=10, column=1,padx=60, pady = 5)
+
             book_exit_btn = Button(book_show_info, text="닫기", command=lambda: bookshow.destroy())
             book_exit_btn.grid(row=10, column=2, padx=70, pady = 5)
 
@@ -340,6 +348,7 @@ def Bookwindow():
         Bpicture_text = Entry(book_add, width = 50) 
         Bpicture_label.grid(row=7, column=0, padx=10, pady = 5)
         Bpicture_text.grid(row=7, column=1, padx=50, pady = 5)
+        # 사진 제외..?
         
         Bpicture_search_btn = Button(book_add, text="찾기")
         Bpicture_search_btn.grid(row=7, column=2, padx=20, pady = 5)
@@ -368,9 +377,9 @@ def Bookwindow():
 
 ## 대여
 def Rentwindow():
-    def rent_book():
+    def rent_book(): 
         brent_info = Frame(Rent_window, borderwidth = 1, relief = "solid")
-        brent_info.place(x = 90, y = 120)
+        brent_info.place(x = 70, y = 120)
         brent_info.configure(background = "white")
         brent_label = Label(brent_info, text = "대여(도서)", font = ("맑은 고딕", 20), fg = "#203864", bg = "white")
         brent_label.grid(row = 0, column = 1, padx = 80, pady = 10)
@@ -391,8 +400,8 @@ def Rentwindow():
         Brent_treeview.column("BR_name", width=150, anchor="center")
         Brent_treeview.heading("BR_name", text="도서명", anchor="center")
         
-        Brent_treeview.column("BR_author", width=150, anchor="center")
-        Brent_treeview.heading("BR_author", text="저", anchor="center")
+        Brent_treeview.column("BR_author", width=70, anchor="center")
+        Brent_treeview.heading("BR_author", text="저자", anchor="center")
 
         Brent_treeview.column("BR_publi", width=100, anchor="center")
         Brent_treeview.heading("BR_publi", text="출판사", anchor="center")
@@ -400,17 +409,103 @@ def Rentwindow():
         Brent_treeview.column("BR_state", width=80, anchor="center")
         Brent_treeview.heading("BR_state", text="대출상태", anchor="center")
 
-        Brent_treeview["show"] = "headings"
+        def rent_show(event):
+            rentshow = Toplevel(Rent_window)
+            rentshow.resizable(width = False, height = False)
+            
+            rent_show_label = Label(rentshow, image = rent_wall)
+            rent_show_label.pack()
 
-    def rent_user():
+            rent_show_info = Frame(rentshow)
+            rent_show_info.place(x = 20, y = 120)
+            rent_show_info.configure(background = "white")
+            
+            BRlabelISBN = Label(rent_show_info, text="ISBN : ", fg = "#203864", bg = "white") 
+            BRtextISBN = Entry(rent_show_info)
+            BRlabelISBN.grid(row=2, column=0, padx=20, pady = 3)
+            BRtextISBN.grid(row=2, column=1, padx=20, pady = 3)
+            
+            BRlabelname = Label(rent_show_info, text="도서명 : ", fg = "#203864", bg = "white")
+            BRlabelname.grid(row=3, column=0, padx=20, pady = 3)
+            BRtextname = Entry(rent_show_info)
+            BRtextname.grid(row=3, column=1, padx=20, pady = 3)
+
+            BRlabelauthor = Label(rent_show_info, text="저자 : ", fg = "#203864", bg = "white")
+            BRtextauthor = Entry(rent_show_info)
+            BRlabelauthor.grid(row=4, column=0, padx=20, pady = 3)
+            BRtextauthor.grid(row=4, column=1, padx=20, pady = 3)
+
+            BRlabelpubli = Label(rent_show_info, text="출판사 : ", fg = "#203864", bg = "white")
+            BRtextpubli = Entry(rent_show_info)
+            BRlabelpubli.grid(row=5, column=0, padx=20, pady = 3)
+            BRtextpubli.grid(row=5, column=1, padx=20, pady = 3)
+
+            BRlabelprice = Label(rent_show_info, text="가격 : ", fg = "#203864", bg = "white")
+            BRtextprice = Entry(rent_show_info)
+            BRlabelprice.grid(row=6, column=0, padx=20, pady = 3)
+            BRtextprice.grid(row=6, column=1, padx=20, pady = 3)
+
+            BRlabelURL = Label(rent_show_info, text="관련 URL: ", fg = "#203864", bg = "white")
+            BRtextURL = Entry(rent_show_info)
+            BRlabelURL.grid(row=7, column=0, padx=20, pady = 3)
+            BRtextURL.grid(row=7, column=1, padx=20, pady = 3)
+
+            URlabelname = Label(rent_show_info, text="이름 : ", fg = "#203864", bg = "white")
+            URlabelname.grid(row=2, column=2, padx=20, pady = 3)
+            URtextname = Entry(rent_show_info)
+            URtextname.grid(row=2, column=3, padx=20, pady = 3)
+
+            URlabelBirth = Label(rent_show_info, text="생년월일 : ", fg = "#203864", bg = "white")
+            URtextBirth = Entry(rent_show_info)
+            URlabelBirth.grid(row=3, column=2, padx=20, pady = 3)
+            URtextBirth.grid(row=3, column=3, padx=20, pady = 3)
+
+            URlabelHP = Label(rent_show_info, text="전화번호 : ", fg = "#203864", bg = "white")
+            URtextHP = Entry(rent_show_info)
+            URlabelHP.grid(row=4, column=2, padx=20, pady = 3)
+            URtextHP.grid(row=4, column=3, padx=20, pady = 3)
+
+            URlabelGender = Label(rent_show_info, text="성별 : ", fg = "#203864", bg = "white")
+            URtextGender = Entry(rent_show_info)
+            URlabelGender.grid(row=5, column=2, padx=20, pady = 3)
+            URtextGender.grid(row=5, column=3, padx=20, pady = 3)
+
+            URlabelEmail = Label(rent_show_info, text="이메일: ", fg = "#203864", bg = "white")
+            URtextEmail = Entry(rent_show_info)
+            URlabelEmail.grid(row=6, column=2, padx=20, pady = 3)
+            URtextEmail.grid(row=6, column=3, padx=20, pady = 3)
+
+            labelreturnday = Label(rent_show_info, text="반납 예정일: ", fg = "#203864", bg = "white")
+            textreturnday = Entry(rent_show_info)
+            labelreturnday.grid(row=8, column=0, padx=20, pady = 3)
+            textreturnday.grid(row=8, column=1, padx=20, pady = 3)
+
+            labelreturncheck = Label(rent_show_info, text="반납여부: ", fg = "#203864", bg = "white")
+            textreturncheck = Entry(rent_show_info)
+            labelreturncheck.grid(row=8, column=2, padx=20, pady = 3)
+            textreturncheck.grid(row=8, column=3, padx=20, pady = 3)
+
+            book_delete_btn = Button(rent_show_info, text="대출완료")
+            book_delete_btn.grid(row=10, column=1,padx=10, pady = 5)
+
+            book_exit_btn = Button(rent_show_info, text="닫기", command=lambda: rentshow.destroy())
+            book_exit_btn.grid(row=10, column=2, padx=10, pady = 5)
+
+        brent_check_btn = Button(brent_info, text= "선택")
+        brent_check_btn.grid(row = 4, column = 1, padx = 20, pady = 20)
+
+        brent_exit_btn = Button(brent_info, text="닫기", command=lambda: brent_info.destroy())
+        brent_exit_btn.grid(row=4, column=2, padx=20, pady = 5)
+
+        Brent_treeview.bind('<Double-1>', rent_show) # 목록에서 선택하고 버튼 클릭..?
+
+
+    def rent_user(): # 대여 가능 여부 확인
         Urent_info = Frame(Rent_window, borderwidth = 1, relief = "solid")
-        Urent_info.place(x = 90, y = 120)
+        Urent_info.place(x = 45, y = 120)
         Urent_info.configure(background = "white")
-        # font 한글도 가능한건가...
         urent_label = Label(Urent_info, text = "대여(회원)", font = ("맑은 고딕", 20), fg = "#203864", bg = "white")
         urent_label.grid(row = 0, column = 1, padx = 80, pady = 10)
-        ## X_btn = Button(user_info, image = X, bd = 0, bg = "white", command = lambda:frameexit(user_info))
-        ## X_btn.grid(row = 0, column = 2)
 
         Urent_name_label = Label(Urent_info, text = "회원명 : ", fg = "#203864", bg = "white")
         Urent_name_label.grid(row = 1, column = 0, padx = 10, pady = 5)
@@ -419,38 +514,42 @@ def Rentwindow():
         usear_btn = Button(Urent_info, text = "조회")
         usear_btn.grid(row = 1, column = 2, padx = 20, pady = 5)
 
-        # 맞추기 싫어....
         Urent_treeview = tkinter.ttk.Treeview(Urent_info,
-                                         column = ["UR_name", "UR_birth", "UR_phone", "UR_gender", "UR_email", "UR_state"],
-                                         displaycolumns = ["UR_name", "UR_birth", "UR_phone", "UR_gender", "UR_email", "UR_state"])
+                                              column = ["UR_name", "UR_birth", "UR_phone", "UR_gender", "UR_email", "UR_state"],
+                                              displaycolumns = ["UR_name", "UR_birth", "UR_phone", "UR_gender", "UR_email", "UR_state"],
+                                              height = 7, show = 'headings')
 
         Urent_treeview.grid(row = 3, column = 1)
         
-        Urent_treeview.column("UR_name", width=80, anchor="center")
+        Urent_treeview.column("UR_name", width=50, anchor="center")
         Urent_treeview.heading("UR_name", text="이름", anchor="center")
 
-        Urent_treeview.column("UR_birth", width=120, anchor="center")
+        Urent_treeview.column("UR_birth", width=100, anchor="center")
         Urent_treeview.heading("UR_birth", text="생년월일", anchor="center")
 
-        Urent_treeview.column("UR_phone", width=150, anchor="center")
+        Urent_treeview.column("UR_phone", width=100, anchor="center")
         Urent_treeview.heading("UR_phone", text="전화번호", anchor="center")
 
-        Urent_treeview.column("UR_gender", width=80, anchor="center")
+        Urent_treeview.column("UR_gender", width=40, anchor="center")
         Urent_treeview.heading("UR_gender", text="성별", anchor="center")
 
-        Urent_treeview.column("UR_email", width=120, anchor="center")
+        Urent_treeview.column("UR_email", width=100, anchor="center")
         Urent_treeview.heading("UR_email", text="이메일", anchor="center")
 
-        Urent_treeview.column("UR_state", width=100, anchor="center")
+        Urent_treeview.column("UR_state", width=70, anchor="center")
         Urent_treeview.heading("UR_state", text="대출상태", anchor="center")
 
-        Urent_treeview["show"] = "headings"
+        Urent_check_btn = Button(Urent_info, text= "선택")
+        Urent_check_btn.grid(row = 4, column = 1, padx = 20, pady = 20)
+
+        Urent_exit_btn = Button(Urent_info, text="닫기", command=lambda: Urent_info.destroy())
+        Urent_exit_btn.grid(row=4, column=2, padx=20, pady = 5)
+
 
     def rent_return():
         rent_info = Frame(Rent_window, borderwidth = 1, relief = "solid")
         rent_info.place(x = 30, y = 120)
         rent_info.configure(background = "white")
-        # font 한글도 가능한건가...
         rent_label = Label(rent_info, text = "조회 / 반납", font = ("맑은 고딕", 20), fg = "#203864", bg = "white")
         rent_label.grid(row = 0, column = 1, padx = 80, pady = 10)
 
@@ -466,8 +565,9 @@ def Rentwindow():
         rsear_btn.grid(row = 2, column = 2, padx = 20, pady = 5)
 
         rent_treeview = tkinter.ttk.Treeview(rent_info,
-                                         column = ["R_uname", "R_bname", "R_rentday", "R_returnday", "R_rent_check"],
-                                         displaycolumns = ["R_uname", "R_bname", "R_rentday", "R_returnday", "R_rent_check"])
+                                             column = ["R_uname", "R_bname", "R_rentday", "R_returnday", "R_rent_check"],
+                                             displaycolumns = ["R_uname", "R_bname", "R_rentday", "R_returnday", "R_rent_check"],
+                                             height = 7, show = 'headings')
 
         rent_treeview.grid(row = 3, column = 1)
         
@@ -486,7 +586,12 @@ def Rentwindow():
         rent_treeview.column("R_rent_check", width=80, anchor="center")
         rent_treeview.heading("R_rent_check", text="반납여부", anchor="center")
 
-        rent_treeview["show"] = "headings"
+        Urent_check_btn = Button(rent_info, text= "반납")
+        Urent_check_btn.grid(row = 4, column = 1, padx = 20, pady = 20)
+
+        Urent_exit_btn = Button(rent_info, text="닫기", command=lambda: rent_info.destroy())
+        Urent_exit_btn.grid(row=4, column=2, padx=20, pady = 5)
+
     
     Rent_window = Toplevel(window)
     Rent_window.geometry("700x500")
@@ -521,6 +626,7 @@ rent = PhotoImage(file = "대여.png")
 de_wall = PhotoImage(file = "기본 배경.png")
 user_wall = PhotoImage(file = "회원 정보.png")
 book_wall = PhotoImage(file = "도서 정보.png")
+rent_wall = PhotoImage(file = "대여 정보.png")
 
 wall_label = Label(window, image = wall)
 wall_label.place(x = -2, y = -2)
