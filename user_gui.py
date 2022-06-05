@@ -10,10 +10,6 @@ import pandas as pd
 import datetime
 warnings.filterwarnings('ignore')
 
-## 프레임 닫고싶은데..
-## def frameexit(frame):
-##    frame.grid_forget()
-
 
 #회원
 
@@ -21,7 +17,6 @@ def Userwindow():       #메인 화면에서 회원을 눌렀을 때
     def Usersearch():       #조회, 등록 버튼 중 조회를 눌렀을 때       
         def User_Show(event):   #treeview로 조회된 회원중 한명을 더블클릭 했을 때           
             def Change():   #회원 수정
-                
                 #getValue 여기도 있음(더블클릭한 treeview 값)
                 #PHONE을 인덱스로 불러온 df_user 존재
                 nonlocal df_user
@@ -39,7 +34,7 @@ def Userwindow():       #메인 화면에서 회원을 눌렀을 때
                         "OUT_DATE" :change_user['OUT_DATE'],
                         "RENT_CNT" :change_user['RENT_CNT'],
                         "DO_OUT" : change_user['DO_OUT']}
-    
+
                 df_user = df_user.reset_index()                   #변경된 전화번호 입력하기 위해 전화번호 인덱스 해제
                 changeindex = df_user.index[df_user['PHONE'] == getValue[2]]
                 
@@ -48,12 +43,12 @@ def Userwindow():       #메인 화면에서 회원을 눌렀을 때
                 df_user_notme = df_user
                 df_user_notme = df_user_notme.drop(changeindex, inplace = False)        #선택했던 전화번호에 해당하는 행은 제외하고 비교하기 위해(선택한 회원의 전화번호는 안바뀔 수도 있으므로)
                 
-                
                 if (df_user_notme['PHONE'] == new_user['PHONE']).any():
                     messagebox.showinfo("회원 수정 실패", "이미 등록된 회원입니다.")
                 else:
                     df_user.to_csv("USER1.csv", index = False, encoding= 'UTF-8-sig')
-                
+                    user_show.destroy()
+                df_user = pd.read_csv('USER1.csv', encoding = 'UTF-8', index_col = 'PHONE')
             def Delete():   #회원 삭제
                 #getValue 여기도 있음(더블클릭한 treeview 값)
                 #상위 함수에 PHONE을 인덱스로 불러온 df_user 존재
@@ -63,21 +58,24 @@ def Userwindow():       #메인 화면에서 회원을 눌렀을 때
                 change_phone = Uphone_value1.get() +'-' + Uphone_value2.get() + '-' + Uphone_value3.get()
                 change_birth = year_text.get() + '.' + month_text.get() +'.' + day_text.get()
                 change_mail = mail_text.get() + '@' + mail_combo.get()
-                
-                if df_user.loc[getValue[2]]["RENT_CNT"] > 0 :
-                    messagebox.showinfo("회원 삭제 실패", "도서 대출 중인 회원 입니다.")
-                    return
+
+
                 if (df_user.index != change_phone).all() or (df_user["NAME"] != name_text.get()).all() or (df_user["BIRTH"] != change_birth).all() or (df_user["GENDER"] != gender_var.get()).all() or (df_user["MAIL"] != change_mail).all():
                     messagebox.showinfo("회원 삭제 실패", "등록된 회원이 아닙니다.")
                     return
                 
+                if df_user.loc[getValue[2]]["RENT_CNT"] > 0 :
+                    messagebox.showinfo("회원 삭제 실패", "도서 대출 중인 회원 입니다.")
+                    return
+                
+                if df_user.loc[getValue[2]]["DO_OUT"] == 1 :
+                    messagebox.showinfo("회원 삭제 실패", "이미 탈퇴한 회원입니다.")
+                    return
                 df_user.loc[getValue[2],'OUT_DATE'] = now.strftime("%Y-%m-%d")
-                df_user.loc[getValue[2],"DO_OUT"] = 1
-                
+                df_user.loc[getValue[2],"DO_OUT"] = 1            
                 df_user = df_user.reset_index()
-                
                 df_user.to_csv("USER1.csv", index = False, encoding= 'UTF-8-sig')
-
+                user_show.destroy()
             #조회된 회원 더블클릭했을 때
             selectedItem = Utreeview.focus()
             getValue = Utreeview.item(selectedItem).get('values')
@@ -220,6 +218,15 @@ def Userwindow():       #메인 화면에서 회원을 눌렀을 때
             Utreeview.bind("<Double-1>",User_Show)
                     
         #조회, 등록 중 조회 눌렀을 때
+        global user_info
+        try:
+            user_add.destroy()
+        except:
+            pass
+        try:
+            user_info.destroy()
+        except:
+            pass
         user_info = Frame(User_window, borderwidth = 1, relief = "solid")
         user_info.place(x = 30, y = 120)
         user_info.configure(background = "white")
@@ -316,27 +323,36 @@ def Userwindow():       #메인 화면에서 회원을 눌렀을 때
                     "OUT_DATE" : '',
                     "RENT_CNT" : 0,
                     "DO_OUT" : 0}
+            
             if existcheck == 0:
                 messagebox.showinfo("입력 오류", "중복 확인 하십시오")
                 return
-            
-            if (df_user['PHONE']==new_user['PHONE']).any():
-                messagebox.showinfo("회원 중복 확인", "이미 등록된 회원입니다.")
-            else:  
-                df_user = df_user.append(new_user, ignore_index=True)
-
-                df_user = df_user.set_index(df_user['PHONE'])
-                
+            add_index = df_user.index[df_user['PHONE'] == Uphone]
+            if (df_user['PHONE'] == Uphone).any() :
+                df_user.loc[add_index] = (new_user['PHONE'], new_user['NAME'], new_user['BIRTH'], new_user['GENDER'], new_user['MAIL'], new_user['REG_DATE'], new_user['OUT_DATE'],new_user['RENT_CNT'], new_user['DO_OUT'])
+                messagebox.showinfo("회원 등록", "회원 재가입 성공")
                 df_user.to_csv("USER1.csv", index = False, encoding= 'UTF-8-sig')
+            else :
+                df_user = df_user.append(new_user, ignore_index=True)
+                messagebox.showinfo("회원 등록", "회원 등록 성공")
+                df_user.to_csv("USER1.csv", index = False, encoding= 'UTF-8-sig')
+            
         def Exist_check():  #중복 체크
             nonlocal existcheck         #상위 함수에 있는 중복 확인 체크용 변수
             
             df_user = pd.read_csv('USER1.csv', encoding = 'UTF-8')
             Uphone = Uphone_text1.get() +'-' + Uphone_text2.get() + '-' + Uphone_text3.get()
-  
     
             if (df_user['PHONE'] == Uphone).any() :
-                messagebox.showinfo("중복된 전화번호", "이미 등록된 회원입니다.")
+                readd_index = df_user.index[df_user['PHONE'] == Uphone]
+                if (df_user.loc[readd_index]['DO_OUT'] == 1).all():
+                    existcheck = 1
+                    messagebox.showinfo("중복 확인 완료", "탈퇴한 회원입니다.")           #회원 재가입 구현
+                    Uphone_text1.configure(state='disabled')
+                    Uphone_text2.configure(state='disabled')
+                    Uphone_text3.configure(state='disabled')
+                else :
+                    messagebox.showinfo("중복된 전화번호", "이미 등록된 회원입니다.")
             else :
                 messagebox.showinfo("중복 확인 완료", "등록할 수 있는 회원입니다.")
                 Uphone_text1.configure(state='disabled')
@@ -344,6 +360,15 @@ def Userwindow():       #메인 화면에서 회원을 눌렀을 때
                 Uphone_text3.configure(state='disabled')
                 existcheck = 1
         #조회, 등록중 등록 눌렀을 때
+        global user_add
+        try:
+            user_info.destroy()
+        except:
+            pass
+        try:
+            user_add.destroy()
+        except:
+            pass
         user_add = Frame(User_window, borderwidth = 1, relief = "solid")
         user_add.configure(width = 640, background = "white")
         user_add.place(x = 30, y = 120)
