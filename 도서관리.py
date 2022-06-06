@@ -1,18 +1,309 @@
+#도서관리 프로그램
+import re
 from tkinter import*
 import tkinter.ttk
 from tkinter import messagebox
 
-
-## 함수
-## 조회 등록 수정
+import warnings
+import numpy as np
+import pandas as pd
+import datetime
+warnings.filterwarnings('ignore')
 
 ## 회원
-def Userwindow():
-    def Usersearch():
-        user_info = Frame(User_window, borderwidth = 1, relief = "solid")
-        user_info.place(x = 25, y = 120)
-        user_info.configure(background = "white")
+
+#회원 전화번호 입력할때 숫자 입력제한을 위한 함수
+def PHONE_limit(Uphone_value1,Uphone_value2,Uphone_value3, user_show):      
+    def Validate(action, index, value_if_allowed, prior_value, text, validation_type, trigger_type, widget_name):
+        if CheckCharactersCount(value_if_allowed) and CheckAlphabet(text):
+            return True;
+        else:
+            return False;
+    vcmd = (user_show.register(Validate), '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
+    Uphone_value1 = Entry(user_show, width = 5, validate = 'key', validatecommand = vcmd)   
+    def CheckCharactersCount(value_if_allowed):
+        if len(value_if_allowed) > 3:
+            return False;
+        else:
+            return True
+    def CheckAlphabet(text):
+        condition = re.compile('[0-9]')      #알파벳만을 입력받기 위한 정규식
+        isAlphabet = condition.match(text) #위에서 만든 정규식과 match하는 검사한 결과를 return 해준다
         
+        if isAlphabet: # or value_if_allowed == "":
+            return True
+        else:
+            return False
+    #숫자 4개 입력제한
+    def Validate2(action, index, value_if_allowed, prior_value, text, validation_type, trigger_type, widget_name):
+        if CheckCharactersCount2(value_if_allowed) and CheckAlphabet2(text):
+            return True;
+        else:
+            return False;
+    vcmd = (user_show.register(Validate2), '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
+    Uphone_value2 = Entry(user_show, width = 5, validate = 'key', validatecommand = vcmd)
+    Uphone_value3 = Entry(user_show, width = 5, validate = 'key', validatecommand = vcmd)
+    def CheckCharactersCount2(value_if_allowed):
+        if len(value_if_allowed) > 4:
+            return False;
+        else:
+            return True;
+    def CheckAlphabet2(text):
+        condition = re.compile('[0-9]')      #숫자만을 입력받기 위한 정규식
+        isAlphabet = condition.match(text) #위에서 만든 정규식과 match하는 검사한 결과를 return 해준다
+        
+        if isAlphabet:
+            return True
+        else:
+            return False
+    return Uphone_value1, Uphone_value2, Uphone_value3
+
+# 회원 UI
+def Userwindow(): # 메인화면에서 회원 클릭
+    def Usersearch(): # 회원 조회 클릭
+        def User_Show(event):   #treeview로 조회된 회원중 한명을 더블클릭 했을 때           
+            def Change():   #회원 수정
+                #getValue 여기도 있음(더블클릭한 treeview 값)
+                #PHONE을 인덱스로 불러온 df_user 존재
+                nonlocal df_user
+                change_user = df_user.loc[getValue[2]]     #Treeview 더블클릭할 때 선택된 값
+                change_phone = Uphone_value1.get() +'-' + Uphone_value2.get() + '-' + Uphone_value3.get()
+                change_birth = year_text.get() + '.' + month_text.get() +'.' + day_text.get()
+                change_mail = mail_text.get() + '@' + mail_combo.get()
+                try:
+                    change_birth_check = datetime.datetime.strptime(change_birth, "%Y.%m.%d")
+                except:
+                    messagebox.showinfo("회원 수정 실패", "존재하지 않는 날짜 형식입니다.")
+                    return
+                new_user = {"PHONE" : change_phone,
+                        "NAME" : name_text.get(),
+                        "BIRTH" : change_birth,
+                        "GENDER" : gender_var.get(),
+                        "MAIL" : change_mail,
+                        "REG_DATE" :change_user['REG_DATE'],            #change_user를 이용해서 등록일, 탈퇴일, 빌린 책 개수, 탈퇴여부는 수정할 수 없게 함.
+                        "OUT_DATE" :change_user['OUT_DATE'],
+                        "RENT_CNT" :change_user['RENT_CNT'],
+                        "DO_OUT" : change_user['DO_OUT']}
+
+                df_user = df_user.reset_index()                   #변경된 전화번호 입력하기 위해 전화번호 인덱스 해제
+                changeindex = df_user.index[df_user['PHONE'] == getValue[2]]
+                
+                df_user.loc[changeindex] = (new_user['PHONE'], new_user['NAME'], new_user['BIRTH'], new_user['GENDER'], new_user['MAIL'], new_user['REG_DATE'], new_user['OUT_DATE'],new_user['RENT_CNT'], new_user['DO_OUT'])
+
+                df_user_notme = df_user
+                df_user_notme = df_user_notme.drop(changeindex, inplace = False)        #선택했던 전화번호에 해당하는 행은 제외하고 비교하기 위해(선택한 회원의 전화번호는 안바뀔 수도 있으므로)
+                
+                
+                if (df_user_notme['PHONE'] == new_user['PHONE']).any():
+                    messagebox.showinfo("회원 수정 실패", "이미 등록된 회원입니다.")
+                elif not name_text.get() or len(name_text.get()) > 10 :
+                    messagebox.showinfo("회원 수정 실패", "이름을 입력하시오(1~10자)")
+                elif not Uphone_value1.get() or not Uphone_value2.get() or not Uphone_value3.get() :
+                    messagebox.showinfo("회원 수정 실패", "번호를 입력하시오")
+                elif not mail_text.get() or (len(mail_text.get() + mail_combo.get()) + 1) > 255:
+                    messagebox.showinfo("회원 수정 실패", "이메일을 입력하시오")
+                else:
+                    df_user.to_csv("USER1.csv", index = False, encoding= 'UTF-8-sig')
+                    user_show.destroy()
+                    messagebox.showinfo("회원 수정 성공", "수정이 완료되었습니다.")
+                    Usersearch()
+                df_user = pd.read_csv('USER1.csv', encoding = 'UTF-8', index_col = 'PHONE')
+                
+            def Delete():   #회원 삭제
+                #getValue 여기도 있음(더블클릭한 treeview 값)
+                #상위 함수에 PHONE을 인덱스로 불러온 df_user 존재
+                nonlocal df_user
+                now = datetime.datetime.now()
+                change_phone = Uphone_value1.get() +'-' + Uphone_value2.get() + '-' + Uphone_value3.get()
+                change_birth = year_text.get() + '.' + month_text.get() +'.' + day_text.get()
+                change_mail = mail_text.get() + '@' + mail_combo.get()
+
+                if (df_user.index != change_phone).all() or (df_user["NAME"] != name_text.get()).all() or (df_user["BIRTH"] != change_birth).all() or (df_user["GENDER"] != gender_var.get()).all() or (df_user["MAIL"] != change_mail).all():
+                    messagebox.showinfo("회원 삭제 실패", "등록된 회원이 아닙니다.")
+                    return
+                
+                if df_user.loc[getValue[2]]["RENT_CNT"] > 0 :
+                    messagebox.showinfo("회원 삭제 실패", "도서 대출 중인 회원 입니다.")
+                    return
+                
+                if df_user.loc[getValue[2]]["DO_OUT"] == 1 :
+                    messagebox.showinfo("회원 삭제 실패", "이미 탈퇴한 회원입니다.")
+                    return
+                df_user.loc[getValue[2],'OUT_DATE'] = now.strftime("%Y.%m.%d")
+                df_user.loc[getValue[2],"DO_OUT"] = 1            
+                df_user = df_user.reset_index()
+                df_user.to_csv("USER1.csv", index = False, encoding= 'UTF-8-sig')
+                user_show.destroy()
+                Usersearch()
+
+            #조회된 회원 더블클릭했을 때 회원 정보
+            selectedItem = Utreeview.focus()
+            getValue = Utreeview.item(selectedItem).get('values')
+            
+            user_show = Toplevel(User_window)
+            # user_show.resizable(width = False, height = False)
+            user_show.title("회원 정보 - " + getValue[0] + "/" + getValue[1] + "/" + getValue[2])
+
+            user_show_label = Label(user_show, image = user_wall)
+            user_show_label.pack()
+
+            user_show_info = Frame(user_show)
+            user_show_info.place(x = 100, y = 80)
+            user_show_info.configure(background = "white")
+
+            #이름
+            name_label = Label(user_show_info, text = "이름 : ", fg = "#203864", bg = "white")
+            name_label.grid(row = 2, column = 0, pady = 8)
+        
+            name_text = Entry(user_show_info)
+            name_text.insert(0, getValue[0])
+            name_text.grid(row = 2,column = 1, pady = 8)
+
+            #생년월일
+            birth_label = Label(user_show_info, text = "생년월일 : ", fg = "#203864", bg = "white")
+            birth_label.grid(row = 3, column = 0, pady =8)
+            
+            #생년월일 년, 월, 일로 구분
+            birth_value = getValue[1].split('.')
+            
+            year_list = list(range(1970,2011))
+            year_text = tkinter.ttk.Combobox(user_show_info)
+            year_text.config(height = 5, width = 10, values = year_list)
+            year_text.set(birth_value[0])
+            년_label = Label(user_show_info, text='년', fg = "#203864", bg = "white")
+            
+            month_list = list(range(1,13))
+            month_text = tkinter.ttk.Combobox(user_show_info)
+            month_text.config(height = 5, width = 4, values = month_list)
+            month_text.set(birth_value[1])
+            월_label = Label(user_show_info, text='월', fg = "#203864", bg = "white")
+
+            day_list = list(range(1,32))
+            day_text = tkinter.ttk.Combobox(user_show_info)
+            day_text.config(height = 5, width = 4, values = day_list)
+            day_text.set(birth_value[2])
+            일_label = Label(user_show_info, text='일', fg = "#203864", bg = "white")
+            
+            year_text.grid(row = 3,column = 1, pady = 8)
+            년_label.place(x = 200, y = 45)
+            month_text.place(x = 240, y = 45)
+            월_label.place(x = 300, y = 45)
+            day_text.place(x = 330, y = 45)
+            일_label.place(x = 390, y = 45)
+
+            #전화번호
+            phone_value = getValue[2].split('-')
+            
+            phone_label = Label(user_show_info, text = "전화번호 : ", fg = "#203864", bg = "white")
+
+            Uphone_value1 = None
+            Uphone_value2 = None
+            Uphone_value3 = None
+            
+            Uphone_value1, Uphone_value2, Uphone_value3 = PHONE_limit(Uphone_value1,Uphone_value2,Uphone_value3, user_show)
+            
+            Uphone_value1.insert(0, phone_value[0])
+            line_text1 = Label(user_show_info, text='-', fg = "#203864", bg = "white")
+
+
+            Uphone_value2.insert(0, phone_value[1])
+            line_text2 = Label(user_show_info, text='-', fg = "#203864", bg = "white")
+                                 
+
+            Uphone_value3.insert(0, phone_value[2])
+
+            phone_label.grid(row = 4, column = 0, pady = 8)
+            Uphone_value1.place(x = 185, y = 165)
+            line_text1.place(x = 125, y = 80)
+            Uphone_value2.place(x = 240, y = 165)
+            line_text2.place(x = 180, y = 80)
+            Uphone_value3.place( x = 295, y = 165)
+
+            #성별
+            gender_label = Label(user_show_info, text = "성별 : ", fg = "#203864", bg = "white")
+            gender_label.grid(row = 5, column = 0, pady =8)
+            gender_var = IntVar()
+            b_man = Radiobutton(user_show_info, fg = "#203864", bg = "white", text='남자', value = 1, variable = gender_var)
+            b_woman = Radiobutton(user_show_info, fg = "#203864", bg = "white", text='여자', value = 0, variable = gender_var)
+            if getValue[3] == "남자" :
+                b_man.select()
+            else:
+                b_woman.select()
+            b_man.place(x = 90, y = 117)
+            b_woman.place(x = 140, y = 117)
+
+            # 이메일
+            mail_label = Label(user_show_info, text = "이메일 : ", fg = "#203864", bg = "white")
+            mail_label.grid(row = 6, column = 0, pady = 8)
+
+            #이메일 아이디 입력
+            mail_value = getValue[4].split('@')     #@를 기준으로 아이디와 이메일주소 분리
+            
+            mail_text = Entry(user_show_info)
+            mail_text.insert(0, mail_value[0])
+            mail_text.grid(row = 6,column = 1, pady = 8)
+            #골뱅이는 자동 입력
+            골뱅이_label = Label(user_show_info, text = "@", fg = "#203864", bg = "white", width = 1)
+            골뱅이_label.grid(row = 6, column = 2, pady = 8)
+            
+            #이메일 콤보박스
+            mail_list = ["naver.com", "hanmail.net", "hotmail.com", "nate.com", "yahoo.co.kr", "gmail.com", "empas.com", "dreamwiz.com"]
+            mail_combo = tkinter.ttk.Combobox(user_show_info)
+            mail_combo.config(height=5, values = mail_list, state="readonly")
+            mail_combo.set(mail_value[1])
+            mail_combo.grid(row = 6,column = 3, pady = 8)
+
+            #전화번호로 df_user에 인덱스 찾고 거기에 해당하는 대출여부, 탈퇴여부 가져와서 Entry에 insert 해야함 - 해결
+            rent_check_label = Label(user_show_info, text = "대출여부", fg = "#203864", bg = "white")
+            rent_check_label.grid(row = 7, column = 0, pady = 5)
+            out_check_label = Label(user_show_info, text = "탈퇴여부",  fg = "#203864", bg = "white")
+            out_check_label.grid(row = 7, column = 2, pady = 5)
+            out_check_text = Entry(user_show_info)
+            rent_check_text = Entry(user_show_info)
+
+            df_user = pd.read_csv('USER1.csv', encoding = 'UTF-8', index_col = 'PHONE')         #PHONE을 인덱스로 불러와서 비교
+            if df_user.loc[getValue[2]]['RENT_CNT'] == 0 :
+                rent_check_text.insert(0, '도서대출 중이 아님')
+            else :
+                rent_check_text.insert(0, '도서대출 중')
+
+            if df_user.loc[getValue[2]]['DO_OUT'] == 0 :
+                out_check_text.insert(0, 'X')
+            else :
+                out_check_text.insert(0, 'O')
+            rent_check_text.configure(state='readonly')
+            out_check_text.configure(state='readonly')
+            rent_check_text.grid(row = 7, column = 1, pady = 5)
+            out_check_text.grid(row = 7, column = 3, pady = 5)
+
+            change_btn = Button(user_show_info, text = "수정", command = Change)
+            change_btn.grid(row = 8, column = 2, pady = 10)
+
+            delete_btn = Button(user_show_info, text = "삭제", command = Delete)
+            delete_btn.grid(row = 8, column = 3, pady = 10)
+
+        def Searched_user():    #이름, 연락처 검색했을 때
+            Utreeview.delete(*Utreeview.get_children()) #Utreeview의 모든 값들 제거
+            
+            for i in range(len(df_user)):               #이름, 연락처 검색한 것만 다시 조회
+                if (Uname_text.get() in list_from_df_user[i][0]) & (sear_Uphone.get() in list_from_df_user[i][2]) :
+                    Utreeview.insert("", "end", text = "", values=list_from_df_user[i], iid = i)
+            Utreeview.bind("<Double-1>",User_Show)
+
+
+        #조회, 등록 중 조회 눌렀을 때
+        global user_info                #조회창이랑 등록창이 이미 있을 때 닫음.
+        try:
+            user_add.destroy()
+        except:
+            pass
+        try:
+            user_info.destroy()
+        except:
+            pass
+        user_info = Frame(User_window, borderwidth = 1, relief = "solid")
+        user_info.place(x = 30, y = 120)
+        user_info.configure(background = "white")
         usearch_label = Label(user_info, text = "회원 조회", font = ("맑은 고딕", 20), fg = "#203864", bg = "white")
         usearch_label.grid(row = 0, column = 1, padx = 80, pady = 10)
 
@@ -24,10 +315,10 @@ def Userwindow():
         Uphone_label.grid(row = 2, column = 0, padx = 10, pady = 5)
         sear_Uphone = Entry(user_info, width = 50)
         sear_Uphone.grid(row = 2, column = 1, padx = 10, pady = 5)
-        usear_btn = Button(user_info, text = "조회")
+        usear_btn = Button(user_info, text = "조회", command = Searched_user)
         usear_btn.grid(row = 2, column = 2, padx = 20, pady = 5)
-        
-        # 조회한 회원
+
+        #조회한 회원
         Utreeview = tkinter.ttk.Treeview(user_info,
                                          column = ["U_name", "U_birth", "U_hp", "U_gender", "U_email", "U_check_rent", "U_check_for_exit"],
                                          displaycolumns = ["U_name", "U_birth", "U_hp", "U_gender", "U_email", "U_check_rent", "U_check_for_exit"],
@@ -56,130 +347,212 @@ def Userwindow():
         Utreeview.column("U_check_for_exit", width=70, anchor="center")
         Utreeview.heading("U_check_for_exit", text="탈퇴여부", anchor="center")
 
-        treeValueList = [("김미경", "2000.12.19", "010-1234-5678", "여", "0123456@naver.com", "3권 대출 중", "X")]
-
-        for i in range(len(treeValueList)):
-            Utreeview.insert("", "end", text="", values=treeValueList[i], iid=i)
-
+        df_user = pd.read_csv('USER1.csv', encoding = 'UTF-8')
+        list_from_df_user = df_user.values.tolist()
+        
+        for i in range(len(list_from_df_user)):
+            if list_from_df_user[i][-1] == 0 :
+                list_from_df_user[i][-1] = '탈퇴X'
+            else :
+                list_from_df_user[i][-1] = '탈퇴O'
+            
+        for i in range(len(df_user)):
+            list_from_df_user[i] = list_from_df_user[i][1:3]+list_from_df_user[i][:1]+list_from_df_user[i][3:5]+list_from_df_user[i][7:]
+            if list_from_df_user[i][3] == 1:
+                list_from_df_user[i][3] = "남자"
+            else:
+                list_from_df_user[i][3] = "여자"
+            Utreeview.insert("", "end", text = "", values=list_from_df_user[i], iid = i)
+        Utreeview.bind("<Double-1>",User_Show)
+        
         uexit_btn = Button(user_info, text = "닫기",command=lambda: user_info.destroy())
         uexit_btn.grid(row = 6, column = 2, padx = 20, pady = 5)
         
-        # 회원 정보
-        def User_show(event):
-            usershow = Toplevel(User_window)
-            usershow.resizable(width = False, height = False)
+    def Useradd():  #회원 등록(조회, 등록중 등록)
+        existcheck = 0              #중복 체크 했는지 안했는지 확인용 변수(하면 1)
+        
+        def Add():
+            if not Uname_text1.get() or len(Uname_text1.get()) > 10:
+                messagebox.showinfo("입력 오류", "이름을 입력하시오(1~10자)")
+                return
+            if not Uphone_text1.get() or not Uphone_text2.get() or not Uphone_text3.get() :
+                messagebox.showinfo("입력 오류", "번호를 입력하시오")
+                return
+            if not Uemail_text.get() or (len(Uemail_text.get() + mail_combo.get()) + 1) > 255:
+                messagebox.showinfo("입력 오류", "이메일을 입력하시오")
+                return
             
-            user_show_label = Label(usershow, image = user_wall)
-            user_show_label.pack()
+            Uphone = Uphone_text1.get() +'-' + Uphone_text2.get() + '-' +Uphone_text3.get()
+            Ubirth = year_combo.get() + '.' + month_combo.get() +'.' + day_combo.get()
 
-            user_show_info = Frame(usershow)
-            user_show_info.place(x = 20, y = 70)
-            user_show_info.configure(background = "white")
+            try:
+                Ubirth_check = datetime.datetime.strptime(Ubirth, "%Y.%m.%d")
+            except:
+                messagebox.showinfo("입력 오류", "존재하지 않는 날짜 형식입니다.")
+                return
+            Umail = Uemail_text.get() + '@' + mail_combo.get()
             
-            UlabelName = Label(user_show_info, text="이름 : ", fg = "#203864", bg = "white")
-            UlabelName.grid(row=2, column=0, padx=60, pady = 3)
-            UtextName = Entry(user_show_info)
-            UtextName.grid(row=2, column=1, padx=70, pady = 3)
+            now = datetime.datetime.now()
+            new_user = {"PHONE" : Uphone,
+                    "NAME" : Uname_text1.get(),
+                    "BIRTH" : Ubirth,
+                    "GENDER" : Ugender_var.get(),
+                    "MAIL" : Umail,
+                    "REG_DATE" :now.strftime("%Y.%m.%d"),
+                    "OUT_DATE" : '',
+                    "RENT_CNT" : 0,
+                    "DO_OUT" : 0}
+            
+            if existcheck == 0:
+                messagebox.showinfo("입력 오류", "중복 확인 하십시오")
+                return
+            df_user = pd.read_csv('USER1.csv', encoding = 'UTF-8')
+            add_index = df_user.index[df_user['PHONE'] == Uphone]
+            if (df_user['PHONE'] == Uphone).any() :
+                df_user.loc[add_index] = (new_user['PHONE'], new_user['NAME'], new_user['BIRTH'], new_user['GENDER'], new_user['MAIL'], new_user['REG_DATE'], new_user['OUT_DATE'],new_user['RENT_CNT'], new_user['DO_OUT'])
+                messagebox.showinfo("회원 등록", "회원 재가입 성공")
+                df_user.to_csv("USER1.csv", index = False, encoding= 'UTF-8-sig')
+            else :
+                df_user = df_user.append(new_user, ignore_index=True)
+                messagebox.showinfo("회원 등록", "회원 등록 성공")
+                df_user.to_csv("USER1.csv", index = False, encoding= 'UTF-8-sig')
 
-            UlabelBirth = Label(user_show_info, text="생년월일 : ", fg = "#203864", bg = "white")
-            UtextBirth = Entry(user_show_info)
-            UlabelBirth.grid(row=3, column=0, padx=60, pady = 3)
-            UtextBirth.grid(row=3, column=1, padx=70, pady = 3)
+        def Exist_check():  #중복 체크
+            nonlocal existcheck         #상위 함수에 있는 중복 확인 체크용 변수
+            
+            df_user = pd.read_csv('USER1.csv', encoding = 'UTF-8')
+            Uphone = Uphone_text1.get() +'-' + Uphone_text2.get() + '-' + Uphone_text3.get()
+    
+            if (df_user['PHONE'] == Uphone).any() :
+                readd_index = df_user.index[df_user['PHONE'] == Uphone]
+                if (df_user.loc[readd_index]['DO_OUT'] == 1).all():
+                    existcheck = 1
+                    messagebox.showinfo("중복 확인 완료", "탈퇴한 회원입니다.")           #회원 재가입 구현
+                    Uphone_text1.configure(state='disabled')
+                    Uphone_text2.configure(state='disabled')
+                    Uphone_text3.configure(state='disabled')
+                else :
+                    messagebox.showinfo("중복된 전화번호", "이미 등록된 회원입니다.")
+            else :
+                messagebox.showinfo("중복 확인 완료", "등록할 수 있는 회원입니다.")
+                Uphone_text1.configure(state='disabled')
+                Uphone_text2.configure(state='disabled')
+                Uphone_text3.configure(state='disabled')
+                existcheck = 1
 
-            UlabelHP = Label(user_show_info, text="전화번호 : ", fg = "#203864", bg = "white")
-            UtextHP = Entry(user_show_info)
-            UlabelHP.grid(row=4, column=0, padx=60, pady = 3)
-            UtextHP.grid(row=4, column=1, padx=70, pady = 3)
-
-            UlabelGender = Label(user_show_info, text="성별 : ", fg = "#203864", bg = "white")
-            UtextGender = Entry(user_show_info)
-            UlabelGender.grid(row=5, column=0, padx=60, pady = 3)
-            UtextGender.grid(row=5, column=1, padx=70, pady = 3)
-
-            UlabelEmail = Label(user_show_info, text="이메일: ", fg = "#203864", bg = "white")
-            UtextEmail = Entry(user_show_info)
-            UlabelEmail.grid(row=6, column=0, padx=60, pady = 3)
-            UtextEmail.grid(row=6, column=1, padx=70, pady = 3)
-
-            UlabelPicture = Label(user_show_info, text="사진 : ", fg = "#203864", bg = "white") 
-            UtextPicture = Entry(user_show_info)
-            UlabelPicture.grid(row=7, column=0, padx=60, pady = 3)
-            UtextPicture.grid(row=7, column=1, padx=70, pady = 3)
-            # 사진 제외?
-
-            UlabelRent = Label(user_show_info, text="대출여부 : ", fg = "#203864", bg = "white")
-            UtextRent = Entry(user_show_info)
-            UlabelRent.grid(row=8, column=0, padx=60, pady = 3)
-            UtextRent.grid(row=8, column=1, padx=70, pady = 3)
-
-            UlabelExit = Label(user_show_info, text="탈퇴여부 : ", fg = "#203864", bg = "white")
-            UtextExit = Entry(user_show_info)
-            UlabelExit.grid(row=9, column=0, padx=60, pady = 3)
-            UtextExit.grid(row=9, column=1,padx=70, pady = 3)
-
-            user_revice_btn = Button(user_show_info, text="수정")
-            user_revice_btn.grid(row=10, column=0,padx=60, pady = 5)
-
-            user_delete_btn = Button(user_show_info, text="탈퇴")
-            user_delete_btn.grid(row=10, column=1, padx=60, pady = 5)
-
-            Uexit_btn = Button(user_show_info, text="닫기", command=lambda: usershow.destroy())
-            Uexit_btn.grid(row=10, column=2, padx=70, pady = 5)
-
-
-        Utreeview.bind('<Double-1>', User_show)
-
-    def Useradd():
+        #조회, 등록중 등록 눌렀을 때
+        global user_add                 #조회창이랑 등록창이 이미 있을 때 닫음.
+        try:
+            user_info.destroy()
+        except:
+            pass
+        try:
+            user_add.destroy()
+        except:
+            pass
+        
+        # 회원 등록 gui
         user_add = Frame(User_window, borderwidth = 1, relief = "solid")
         user_add.place(x = 35, y = 120)
         user_add.configure(width = 600, height = 1000, background = "white")
         uadd_label = Label(user_add, text = "회원 등록", font = ("맑은 고딕", 20), fg = "#203864", bg = "white")
         uadd_label.grid(row = 0, column = 1, pady = 10)
 
+        #이름
         Uname_add = Label(user_add, text="이름 : ", fg = "#203864", bg = "white")
         Uname_add.grid(row=1, column=0, padx = 10, pady = 5)
         Uname_text1 = Entry(user_add, width = 50) 
         Uname_text1.grid(row=1, column=1, padx=50, pady = 5)
 
+        #frame 크기를 키우기 위한 None_label
+        #None_label = Label(user_add, text='',width = 30, bg = "white")
+        #None_label.grid(row=1, column=2, pady = 5)
+
+        #생년월일
         Ubirth_add = Label(user_add, text="생년월일 : ", fg = "#203864", bg = "white")
-        Ubirth_text = Entry(user_add, width = 50)
-        Ubirth_add.grid(row=2, column=0, padx=10, pady = 5)
-        Ubirth_text.grid(row=2, column=1, padx=50, pady = 5)
+        year_list = list(range(1990,2011))
+        year_combo = tkinter.ttk.Combobox(user_add)
+        year_combo.config(height=5, width = 10, values = year_list)
+        year_combo.set(year_list[0])
+        년_label = Label(user_add, text="년", fg = "#203864", bg = "white")
 
+        month_list = list(range(1,13))
+        month_combo = tkinter.ttk.Combobox(user_add)
+        month_combo.config(height=5, width = 4, values = month_list)
+        month_combo.set(month_list[0])
+        월_label = Label(user_add, text="월", fg = "#203864", bg = "white")
+        
+        day_list = list(range(1,32))
+        day_combo = tkinter.ttk.Combobox(user_add)
+        day_combo.config(height=5, width = 4, values = day_list)
+        day_combo.set(day_list[0])
+        일_label = Label(user_add, text="일", fg = "#203864", bg = "white")
+        
+        Ubirth_add.grid(row=2, column=0, pady = 5)
+        year_combo.place(x=133, y=100)
+        년_label.place(x=230, y = 100)
+        month_combo.place(x=260, y = 100)
+        월_label.place(x=315, y = 100)
+        day_combo.place(x=335, y = 100)
+        일_label.place(x=390, y = 100)
+        
+        #전화번호        
         Uphone_add = Label(user_add, text="전화번호 : ", fg = "#203864", bg = "white")
-        Uphone_text = Entry(user_add, width = 50) 
+        
+        line_label1 = Label(user_add, text='-', fg = "#203864", bg = "white")
+        line_label2 = Label(user_add, text='-', fg = "#203864", bg = "white")
+
+        #숫자 입력제한
+        Uphone_text1 = None
+        Uphone_text2 = None
+        Uphone_text3 = None
+        
+        Uphone_text1, Uphone_text2, Uphone_text3 = PHONE_limit(Uphone_text1,Uphone_text2,Uphone_text3, user_add)
+
         Uphone_add.grid(row=3, column=0, padx=10, pady = 5)
-        Uphone_text.grid(row=3, column=1, padx=50, pady = 5)
-        
-        Uphone_check_btn = Button(user_add, text="중복확인")
-        Uphone_check_btn.grid(row=3, column=2, padx=10, pady = 5)
+        Uphone_text1.place(x = 135, y = 130)
+        line_label1.place(x = 175, y = 130)
+        Uphone_text2.place(x = 185, y = 130)
+        line_label2.place(x = 225, y = 130)
+        Uphone_text3.place(x = 235, y = 130)
 
+        #중복확인
+        Uphone_check_btn = Button(user_add, fg = "#203864", bg = "white", text="중복확인", command = Exist_check)
+        Uphone_check_btn.grid(row=3, column=2, padx=20, pady = 5)
+
+        #성별
         Ugender_label = Label(user_add, text="성별 : ", fg = "#203864", bg = "white")
-        Ugender_text = Entry(user_add, width = 50) 
-        Ugender_label.grid(row=4, column=0, padx=10, pady = 5)
-        Ugender_text.grid(row=4, column=1, padx=50, pady = 5)
-
-        Uemail_label = Label(user_add, text="이메일 : ", fg = "#203864", bg = "white")
-        Uemail_text = Entry(user_add, width = 50) 
-        Uemail_label.grid(row=5, column=0, padx=10, pady = 5)
-        Uemail_text.grid(row=5, column=1, padx=50, pady = 5)
-
-        Upicture_label = Label(user_add, text="사 진 : ", fg = "#203864", bg = "white") 
-        Upicture_text = Entry(user_add, width = 50) 
-        Upicture_label.grid(row=6, column=0, padx=10, pady = 5)
-        Upicture_text.grid(row=6, column=1, padx=50, pady = 5)
-        # 사진 제외?
+        Ugender_var = IntVar()
+        btn_man = Radiobutton(user_add, text='남자', value = 1, variable = Ugender_var, bg = "white")
+        btn_man.select()
+        btn_woman = Radiobutton(user_add, text='여자', value = 0, variable = Ugender_var, bg = "white")
         
-        Upicture_search_btn = Button(user_add, text="찾기")
-        Upicture_search_btn.grid(row=6, column=2, padx=20, pady = 5)
+        Ugender_label.grid(row=4, column=0, padx=10, pady = 5)
+        btn_man.place(x = 135, y = 165)
+        btn_woman.place(x = 185, y = 165)
 
-        user_add_btn = Button(user_add, text= "등록")
+        #이메일
+        Uemail_label = Label(user_add, text="이메일 : ", fg = "#203864", bg = "white")
+        Uemail_text = Entry(user_add, width = 15)
+        골뱅이_label = Label(user_add, text='@', fg = "#203864", bg = "white")
+        mail_list = ["naver.com", "hanmail.net", "hotmail.com", "nate.com", "yahoo.co.kr", "gmail.com", "empas.com", "dreamwiz.com"]
+        mail_combo = tkinter.ttk.Combobox(user_add)
+        mail_combo.config(height=5, values = mail_list, state="readonly")
+        mail_combo.set(mail_list[0])
+            
+        Uemail_label.grid(row=5, column=0, padx=10, pady = 5)
+        Uemail_text.place(x = 135, y =200)
+        골뱅이_label.place(x=250, y = 200)
+        mail_combo.place(x=270, y = 200)
+
+
+        user_add_btn = Button(user_add, fg = "#203864", bg = "white", text= "등록", command = Add)
         user_add_btn.grid(row = 7, column = 1, padx = 10, pady = 20)
 
-        user_exit_btn = Button(user_add, text= "닫기",command = lambda: user_add.destroy())
+        user_exit_btn = Button(user_add, text= "닫기", fg = "#203864", bg = "white", command = lambda: user_add.destroy())
         user_exit_btn.grid(row = 7, column = 2, padx = 10, pady = 20)
 
-        
+    #유저 윈도우 - 조회, 등록 버튼 중 클릭 (조회에서 수정, 삭제 가능) 
     User_window = Toplevel(window)
     User_window.geometry("700x500")
     User_window.resizable(width = False, height = False)
@@ -343,20 +716,11 @@ def Bookwindow():
         BURL_label.grid(row=6, column=0, padx=10, pady = 5)
         BURL_text.grid(row=6, column=1, padx=50, pady = 5)
 
-        Bpicture_label = Label(book_add, text="사 진 : ", fg = "#203864", bg = "white") 
-        Bpicture_text = Entry(book_add, width = 50) 
-        Bpicture_label.grid(row=7, column=0, padx=10, pady = 5)
-        Bpicture_text.grid(row=7, column=1, padx=50, pady = 5)
-        # 사진 제외..?
-        
-        Bpicture_search_btn = Button(book_add, text="찾기")
-        Bpicture_search_btn.grid(row=7, column=2, padx=20, pady = 5)
-
         bser_add_btn = Button(book_add, text= "등록")
-        bser_add_btn.grid(row = 8, column = 1, padx = 20, pady = 20)
+        bser_add_btn.grid(row = 7, column = 1, padx = 20, pady = 20)
 
         bser_exit_btn = Button(book_add, text="닫기", command=lambda: book_add.destroy())
-        bser_exit_btn.grid(row=8, column=2, padx=20, pady = 5)
+        bser_exit_btn.grid(row=7, column=2, padx=20, pady = 5)
     
     Book_window = Toplevel(window)
     Book_window.geometry("700x500")
