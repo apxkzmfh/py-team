@@ -1,5 +1,5 @@
 #도서관리 프로그램
-
+import re
 from tkinter import*
 import tkinter.ttk
 from tkinter import messagebox
@@ -11,8 +11,53 @@ import datetime
 warnings.filterwarnings('ignore')
 
 
-#회원
+#회원 전화번호 입력할때 숫자 입력제한을 위한 함수
+def PHONE_limit(Uphone_value1,Uphone_value2,Uphone_value3, user_show):      
+    def Validate(action, index, value_if_allowed, prior_value, text, validation_type, trigger_type, widget_name):
+        if CheckCharactersCount(value_if_allowed) and CheckAlphabet(text):
+            return True;
+        else:
+            return False;
+    vcmd = (user_show.register(Validate), '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
+    Uphone_value1 = Entry(user_show, width = 5, validate = 'key', validatecommand = vcmd)   
+    def CheckCharactersCount(value_if_allowed):
+        if len(value_if_allowed) > 3:
+            return False;
+        else:
+            return True
+    def CheckAlphabet(text):
+        condition = re.compile('[0-9]')      #알파벳만을 입력받기 위한 정규식
+        isAlphabet = condition.match(text) #위에서 만든 정규식과 match하는 검사한 결과를 return 해준다
+        
+        if isAlphabet: # or value_if_allowed == "":
+            return True
+        else:
+            return False
+    #숫자 4개 입력제한
+    def Validate2(action, index, value_if_allowed, prior_value, text, validation_type, trigger_type, widget_name):
+        if CheckCharactersCount2(value_if_allowed) and CheckAlphabet2(text):
+            return True;
+        else:
+            return False;
+    vcmd = (user_show.register(Validate2), '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
+    Uphone_value2 = Entry(user_show, width = 5, validate = 'key', validatecommand = vcmd)
+    Uphone_value3 = Entry(user_show, width = 5, validate = 'key', validatecommand = vcmd)
+    def CheckCharactersCount2(value_if_allowed):
+        if len(value_if_allowed) > 4:
+            return False;
+        else:
+            return True;
+    def CheckAlphabet2(text):
+        condition = re.compile('[0-9]')      #숫자만을 입력받기 위한 정규식
+        isAlphabet = condition.match(text) #위에서 만든 정규식과 match하는 검사한 결과를 return 해준다
+        
+        if isAlphabet:
+            return True
+        else:
+            return False
+    return Uphone_value1, Uphone_value2, Uphone_value3
 
+#회원
 def Userwindow():       #메인 화면에서 회원을 눌렀을 때   
     def Usersearch():       #조회, 등록 버튼 중 조회를 눌렀을 때       
         def User_Show(event):   #treeview로 조회된 회원중 한명을 더블클릭 했을 때           
@@ -24,7 +69,11 @@ def Userwindow():       #메인 화면에서 회원을 눌렀을 때
                 change_phone = Uphone_value1.get() +'-' + Uphone_value2.get() + '-' + Uphone_value3.get()
                 change_birth = year_text.get() + '.' + month_text.get() +'.' + day_text.get()
                 change_mail = mail_text.get() + '@' + mail_combo.get()
-                
+                try:
+                    change_birth_check = datetime.datetime.strptime(change_birth, "%Y.%m.%d")
+                except:
+                    messagebox.showinfo("회원 수정 실패", "존재하지 않는 날짜 형식입니다.")
+                    return
                 new_user = {"PHONE" : change_phone,
                         "NAME" : name_text.get(),
                         "BIRTH" : change_birth,
@@ -43,22 +92,29 @@ def Userwindow():       #메인 화면에서 회원을 눌렀을 때
                 df_user_notme = df_user
                 df_user_notme = df_user_notme.drop(changeindex, inplace = False)        #선택했던 전화번호에 해당하는 행은 제외하고 비교하기 위해(선택한 회원의 전화번호는 안바뀔 수도 있으므로)
                 
+                
                 if (df_user_notme['PHONE'] == new_user['PHONE']).any():
                     messagebox.showinfo("회원 수정 실패", "이미 등록된 회원입니다.")
+                elif not name_text.get() or len(name_text.get()) > 10 :
+                    messagebox.showinfo("회원 수정 실패", "이름을 입력하시오(1~10자)")
+                elif not Uphone_value1.get() or not Uphone_value2.get() or not Uphone_value3.get() :
+                    messagebox.showinfo("회원 수정 실패", "번호를 입력하시오")
+                elif not mail_text.get() or (len(mail_text.get() + mail_combo.get()) + 1) > 255:
+                    messagebox.showinfo("회원 수정 실패", "이메일을 입력하시오")
                 else:
                     df_user.to_csv("USER1.csv", index = False, encoding= 'UTF-8-sig')
                     user_show.destroy()
+                    messagebox.showinfo("회원 수정 성공", "수정이 완료되었습니다.")
+                    Usersearch()
                 df_user = pd.read_csv('USER1.csv', encoding = 'UTF-8', index_col = 'PHONE')
             def Delete():   #회원 삭제
                 #getValue 여기도 있음(더블클릭한 treeview 값)
                 #상위 함수에 PHONE을 인덱스로 불러온 df_user 존재
                 nonlocal df_user
-
                 now = datetime.datetime.now()
                 change_phone = Uphone_value1.get() +'-' + Uphone_value2.get() + '-' + Uphone_value3.get()
                 change_birth = year_text.get() + '.' + month_text.get() +'.' + day_text.get()
                 change_mail = mail_text.get() + '@' + mail_combo.get()
-
 
                 if (df_user.index != change_phone).all() or (df_user["NAME"] != name_text.get()).all() or (df_user["BIRTH"] != change_birth).all() or (df_user["GENDER"] != gender_var.get()).all() or (df_user["MAIL"] != change_mail).all():
                     messagebox.showinfo("회원 삭제 실패", "등록된 회원이 아닙니다.")
@@ -71,11 +127,12 @@ def Userwindow():       #메인 화면에서 회원을 눌렀을 때
                 if df_user.loc[getValue[2]]["DO_OUT"] == 1 :
                     messagebox.showinfo("회원 삭제 실패", "이미 탈퇴한 회원입니다.")
                     return
-                df_user.loc[getValue[2],'OUT_DATE'] = now.strftime("%Y-%m-%d")
+                df_user.loc[getValue[2],'OUT_DATE'] = now.strftime("%Y.%m.%d")
                 df_user.loc[getValue[2],"DO_OUT"] = 1            
                 df_user = df_user.reset_index()
                 df_user.to_csv("USER1.csv", index = False, encoding= 'UTF-8-sig')
                 user_show.destroy()
+                Usersearch()
             #조회된 회원 더블클릭했을 때
             selectedItem = Utreeview.focus()
             getValue = Utreeview.item(selectedItem).get('values')
@@ -128,15 +185,20 @@ def Userwindow():       #메인 화면에서 회원을 눌렀을 때
             
             phone_label = Label(user_show, text = "전화번호 : ", font = ("맑은 고딕", 12), fg = "#203864", bg = "white")
 
-            Uphone_value1 = Entry(user_show, width = 5)
+            Uphone_value1 = None
+            Uphone_value2 = None
+            Uphone_value3 = None
+            
+            Uphone_value1, Uphone_value2, Uphone_value3 = PHONE_limit(Uphone_value1,Uphone_value2,Uphone_value3, user_show)
+            
             Uphone_value1.insert(0, phone_value[0])
             line_text1 = Label(user_show, text='-', fg = "#203864", bg = "white")
 
-            Uphone_value2 = Entry(user_show, width = 5)
+
             Uphone_value2.insert(0, phone_value[1])
             line_text2 = Label(user_show, text='-', fg = "#203864", bg = "white")
                                  
-            Uphone_value3 = Entry(user_show, width = 5)
+
             Uphone_value3.insert(0, phone_value[2])
 
             phone_label.grid(row = 2, column = 0, pady =10)
@@ -198,8 +260,8 @@ def Userwindow():       #메인 화면에서 회원을 눌렀을 때
                 out_check_text.insert(0, 'X')
             else :
                 out_check_text.insert(0, 'O')
-            rent_check_text.configure(state='disabled')
-            out_check_text.configure(state='disabled')
+            rent_check_text.configure(state='readonly')
+            out_check_text.configure(state='readonly')
             rent_check_text.grid(row = 5, column = 1, pady = 10)
             out_check_text.grid(row = 5, column = 3, pady = 10)
 
@@ -218,7 +280,7 @@ def Userwindow():       #메인 화면에서 회원을 눌렀을 때
             Utreeview.bind("<Double-1>",User_Show)
                     
         #조회, 등록 중 조회 눌렀을 때
-        global user_info
+        global user_info                #조회창이랑 등록창이 이미 있을 때 닫음.
         try:
             user_add.destroy()
         except:
@@ -232,8 +294,6 @@ def Userwindow():       #메인 화면에서 회원을 눌렀을 때
         user_info.configure(background = "white")
         usearch_label = Label(user_info, text = "회원 조회", font = ("맑은 고딕", 20), fg = "#203864", bg = "white")
         usearch_label.grid(row = 0, column = 1, padx = 80, pady = 10)
-        ## X_btn = Button(user_info, image = X, bd = 0, bg = "white", command = lambda:frameexit(user_info))
-        ## X_btn.grid(row = 0, column = 2)
 
         Uname_label = Label(user_info, text = "이름 : ", fg = "#203864", bg = "white")
         Uname_label.grid(row = 1, column = 0, padx = 10, pady = 5)
@@ -299,18 +359,24 @@ def Userwindow():       #메인 화면에서 회원을 눌렀을 때
         existcheck = 0              #중복 체크 했는지 안했는지 확인용 변수(하면 1)
         
         def Add():
-            if not Uname_text1.get() :
-                messagebox.showinfo("입력 오류", "이름을 입력하시오")
+            if not Uname_text1.get() or len(Uname_text1.get()) > 10:
+                messagebox.showinfo("입력 오류", "이름을 입력하시오(1~10자)")
                 return
             if not Uphone_text1.get() or not Uphone_text2.get() or not Uphone_text3.get() :
                 messagebox.showinfo("입력 오류", "번호를 입력하시오")
                 return
-            if not Uemail_text.get() :
+            if not Uemail_text.get() or (len(Uemail_text.get() + mail_combo.get()) + 1) > 255:
                 messagebox.showinfo("입력 오류", "이메일을 입력하시오")
                 return
-            df_user = pd.read_csv('USER1.csv', encoding = 'UTF-8')
+            
             Uphone = Uphone_text1.get() +'-' + Uphone_text2.get() + '-' +Uphone_text3.get()
             Ubirth = year_combo.get() + '.' + month_combo.get() +'.' + day_combo.get()
+
+            try:
+                Ubirth_check = datetime.datetime.strptime(Ubirth, "%Y.%m.%d")
+            except:
+                messagebox.showinfo("입력 오류", "존재하지 않는 날짜 형식입니다.")
+                return
             Umail = Uemail_text.get() + '@' + mail_combo.get()
             
             now = datetime.datetime.now()
@@ -319,7 +385,7 @@ def Userwindow():       #메인 화면에서 회원을 눌렀을 때
                     "BIRTH" : Ubirth,
                     "GENDER" : Ugender_var.get(),
                     "MAIL" : Umail,
-                    "REG_DATE" :now.strftime("%Y-%m-%d"),
+                    "REG_DATE" :now.strftime("%Y.%m.%d"),
                     "OUT_DATE" : '',
                     "RENT_CNT" : 0,
                     "DO_OUT" : 0}
@@ -327,6 +393,7 @@ def Userwindow():       #메인 화면에서 회원을 눌렀을 때
             if existcheck == 0:
                 messagebox.showinfo("입력 오류", "중복 확인 하십시오")
                 return
+            df_user = pd.read_csv('USER1.csv', encoding = 'UTF-8')
             add_index = df_user.index[df_user['PHONE'] == Uphone]
             if (df_user['PHONE'] == Uphone).any() :
                 df_user.loc[add_index] = (new_user['PHONE'], new_user['NAME'], new_user['BIRTH'], new_user['GENDER'], new_user['MAIL'], new_user['REG_DATE'], new_user['OUT_DATE'],new_user['RENT_CNT'], new_user['DO_OUT'])
@@ -360,7 +427,7 @@ def Userwindow():       #메인 화면에서 회원을 눌렀을 때
                 Uphone_text3.configure(state='disabled')
                 existcheck = 1
         #조회, 등록중 등록 눌렀을 때
-        global user_add
+        global user_add                 #조회창이랑 등록창이 이미 있을 때 닫음.
         try:
             user_info.destroy()
         except:
@@ -416,11 +483,16 @@ def Userwindow():       #메인 화면에서 회원을 눌렀을 때
         
         #전화번호        
         Uphone_add = Label(user_add, text="전화번호 : ", fg = "#203864", bg = "white")
-        Uphone_text1 = Entry(user_add, width = 5)
+        
         line_label1 = Label(user_add, text='-', fg = "#203864", bg = "white")
-        Uphone_text2 = Entry(user_add, width = 5)
         line_label2 = Label(user_add, text='-', fg = "#203864", bg = "white")
-        Uphone_text3 = Entry(user_add, width = 5)
+
+        #숫자 입력제한
+        Uphone_text1 = None
+        Uphone_text2 = None
+        Uphone_text3 = None
+        
+        Uphone_text1, Uphone_text2, Uphone_text3 = PHONE_limit(Uphone_text1,Uphone_text2,Uphone_text3, user_add)
 
         Uphone_add.grid(row=3, column=0, padx=10, pady = 5)
         Uphone_text1.place(x = 135, y = 130)
@@ -459,8 +531,8 @@ def Userwindow():       #메인 화면에서 회원을 눌렀을 때
         mail_combo.place(x=270, y = 200)
         
         #사진 찾기
-        Upicture_search_btn = Button(user_add, fg = "#203864", bg = "white", text="찾기")
-        Upicture_search_btn.grid(row=6, column=7, padx=20, pady = 5)
+##        Upicture_search_btn = Button(user_add, fg = "#203864", bg = "white", text="찾기")
+##        Upicture_search_btn.grid(row=6, column=7, padx=20, pady = 5)
 
         user_add_btn = Button(user_add, fg = "#203864", bg = "white", text= "등록", command = Add)
         user_add_btn.grid(row = 7, column = 7, padx = 20, pady = 20)
