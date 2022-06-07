@@ -70,6 +70,9 @@ def Userwindow(): # 메인화면에서 회원 클릭
                 change_phone = Uphone_value1.get() +'-' + Uphone_value2.get() + '-' + Uphone_value3.get()
                 change_birth = year_text.get() + '.' + month_text.get() +'.' + day_text.get()
                 change_mail = mail_text.get() + '@' + mail_combo.get()
+                if getValue[6] == '탈퇴O':
+                    messagebox.showinfo("회원 수정 실패", "탈퇴한 회원은 수정할 수 없습니다.")
+                    return
                 try:
                     change_birth_check = datetime.datetime.strptime(change_birth, "%Y.%m.%d")
                 except:
