@@ -126,7 +126,12 @@ def Userwindow(): # 메인화면에서 회원 클릭
                 change_birth = year_text.get() + '-' + month_text.get() +'-' + day_text.get()
                 change_mail = mail_text.get() + '@' + mail_combo.get()
 
-                if (df_user.index != change_phone).all() or (df_user["NAME"] != name_text.get()).all() or (df_user["BIRTH"] != change_birth).all() or (df_user["GENDER"] != gender_var.get()).all() or (df_user["MAIL"] != change_mail).all():
+                if getValue[3] == "남자" :
+                    intgender = 1
+                else :
+                    intgender = 0
+            
+                if getValue[2] != change_phone or getValue[0] != name_text.get() or datetime.datetime.strptime(getValue[1], "%Y-%m-%d").date() != datetime.datetime.strptime(change_birth, "%Y-%m-%d").date() or intgender != gender_var.get() or getValue[4] != change_mail :
                     messagebox.showinfo("회원 삭제 실패", "등록된 회원이 아닙니다.")
                     return
                 
