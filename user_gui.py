@@ -408,12 +408,13 @@ def Userwindow(): # 메인화면에서 회원 클릭
                     list_from_df_user[i][3] = "여자"
                 Utreeview.insert("", "end", text = "", values=list_from_df_user[i], iid = i)
             Utreeview.bind("<Double-1>",User_Show)
+            uexit_btn = Button(user_info, text = "닫기",command=lambda: user_info.destroy())
+            uexit_btn.grid(row = 6, column = 2, padx = 20, pady = 5)
         except:
             messagebox.showinfo("조회 실패", "등록된 회원이 없습니다 -> 등록 화면으로 이동합니다.")
             Useradd()
         
-        uexit_btn = Button(user_info, text = "닫기",command=lambda: user_info.destroy())
-        uexit_btn.grid(row = 6, column = 2, padx = 20, pady = 5)
+        
         
     def Useradd():  #회원 등록(조회, 등록중 등록)
         existcheck = 0              #중복 체크 했는지 안했는지 확인용 변수(하면 1)
@@ -490,7 +491,7 @@ def Userwindow(): # 메인화면에서 회원 클릭
                     Useradd()
             except:
                 df_user = pd.DataFrame(new_user, index = [0])
-                df_user.to_csv("USER1.csv", index =False, encoding = "UTF-8-sig")
+                df_user.to_csv("USER1.csv", encoding = "UTF-8-sig")
                 messagebox.showinfo("회원 등록", "회원 등록 성공")
                 Useradd()
         def Exist_check():  #중복 체크
@@ -528,6 +529,7 @@ def Userwindow(): # 메인화면에서 회원 클릭
                     Uphone_text1.configure(state='disabled')
                     Uphone_text2.configure(state='disabled')
                     Uphone_text3.configure(state='disabled')
+                    existcheck = 1
                     
         def Find_picture() : #사진 찾기
             files = filedialog.askopenfilenames(title = "회원 사진을 선택하세요", filetypes = (("모든 파일", "*.*"),
