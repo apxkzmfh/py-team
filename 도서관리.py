@@ -594,6 +594,10 @@ def Userwindow(): # 메인화면에서 회원 클릭
         Uname_text1 = Entry(user_add, width = 50) 
         Uname_text1.grid(row=1, column=1, padx=50, pady = 5)
 
+        #frame 크기를 키우기 위한 None_label
+        #None_label = Label(user_add, text='',width = 30, bg = "white")
+        #None_label.grid(row=1, column=2, pady = 5)
+
         #생년월일
         Ubirth_add = Label(user_add, text="생년월일 : ", fg = "#203864", bg = "white")
         year_list = list(range(1980,2011))
@@ -706,81 +710,47 @@ def Userwindow(): # 메인화면에서 회원 클릭
     user_btn1.grid(row = 0, column = 1)
     
 ## 도서
-df_book=pd.read_csv('bookcsv.csv', encoding='UTF-8')
+    
+df_book=pd.read_csv('Book.csv', encoding='UTF-8-sig')
 book_list=np.array([])
 book_list=np.append(book_list,df_book)
 book_list=np.reshape(book_list,(int(book_list.size/8),8))
-book_list=book_list[:,1:]
-isbnlist = []
+df=pd.read_csv('RENT.csv', encoding='UTF-8') 
+rent_list=np.array([]) # 넘파이 빈리스트 생성
+rent_list=np.append(rent_list,df) # 값들을 append를 사용해 추가
+rent_list=np.reshape(rent_list,(int(rent_list.size/9),9)) # size행 8열로 모양 변환
 
 class Book: #도서 클래스
     
     def __init__(self,book): #생성자
         self.__book=book #self.__으로 private선언
 
-    def save(self): # 변동사항 생길 때마다 저장
-        book_col=["ISBN","TITLE","AUTHOR","PRICE","URL","PUB","RENT"] # 열 이름
-        bookdf=pd.DataFrame(self.__book, columns=book_col) 
-        bookdf.to_csv('bookcsv.csv', encoding='UTF-8') # to_csv작동을 위해 데이터프레임으로 변환
-
-    def B_Info(self,n): # 도서 등록 
-        self.__book=np.append(self.__book, n, axis=0)# 행 방향으로 정보 추가
-        self.save()
-
     def check_book(self, book): #중복확인 함수
-        if book in self.__book[:,1]:
+        if book in self.__book[:,0]:
             return True
         else:
             return False
 
-    def check_isbn(self, isbn): #중복확인 함수
-        if isbn in self.__book[:,0]:
+    def check_isbn(self, isbn):
+        if isbn in self.__book[:,2]:
             return True
         else:
             return False
 
-    def search_booktitle(self,title): 
-        slist = np.array([])
-        find_ind = np.where(self.__book[:,1]==title)
-        for i in find_ind:
-            slist = np.append(slist,self.__book[i,:]) #도서명이 동일하면 리스트에 추가
-        slist = np.reshape(slist,(int(slist.size/7),7))
-        return slist
-
-    def search_bookauthor(self,author):
-        sslist = np.array([])
-        find_ind = np.where(self.__book[:,2]==author)
-        for i in find_ind:
-            sslist=np.append(sslist,self.__book[i,:]) #저자가 동일하면 리스트에 추가
-        sslist=np.reshape(sslist,(int(sslist.size/7),7))
-        return sslist
-
-    def rentbook(self, isbn): 
-        find_ind = np.where(self.__book[:,0]==isbn)
-        return self.__book[find_ind,6]
-
-    def CB_book(self,isbn): # 도서 삭제
-        find_ind = np.where(self.__book[:,0]==isbn)
-        self.__book = np.delete(self.__book, find_ind, 0)
-        self.save()
     
-B=Book(book_list) #인스턴스 생성
+B=Book(book_list)
+R=Book(rent_list)
 def Bookwindow():
     def Booksearch(): #조회도 다 된듯..?
         def printbook(): #도서조회 함수
-            sblist = np.array([])
-            if Bname_text.get():
-                sblist = B.search_booktitle(Bname_text.get()) #도서명 입력된 경우
-            elif sear_Bauthor.get():
-                sblist = B.search_bookauthor(sear_Bauthor.get()) #저자명 입력된 경우
-            else:
-                messagebox.showinfo("경고","도서명과 저자명 하나라도 입력해주세요.")
-            Btreeview.delete(*Btreeview.get_children()) #다른거 조회하면 delete
-            for i in range(int(sblist.size/7)): #대출여부에 따라 문장 추가
-                show=[]
-                for j in range(0,6): #대출여부 외에는 그대로니 for문 사용
-                    show.append(sblist[i,j-1])
-                Btreeview.insert("","end",text="",values=show,iid=i) 
+            df_book = pd.read_csv('Book.csv', encoding='UTF-8-sig')
+            df_book = df_book.astype('str')
+            list_from_df_book = (df_book.values).tolist()
+            treeValueList = list_from_df_book#도서명, 저자명 검색했을때
+            Btreeview.delete(*Btreeview.get_children()) #Btreeview의 모든 값들 제거
+            for i in range(len(df_book)):           
+                if (Bname_text.get() in list_from_df_book[i][1]) & (sear_Bauthor.get() in list_from_df_book[i][2]) :
+                    Btreeview.insert("", "end", text = "", values=list_from_df_book[i], iid = i)
                 
         book_info = Frame(Book_window, borderwidth = 1, relief = "solid")
         book_info.place(x = 30, y = 120)
@@ -804,8 +774,8 @@ def Bookwindow():
         
         # 조회한 도서
         Btreeview = tkinter.ttk.Treeview(book_info,
-                                         column = ["B_check_rent", "B_ISBN", "B_name", "B_author", "B_price", "B_URL"],
-                                         displaycolumns = ["B_check_rent", "B_ISBN", "B_name", "B_author", "B_price", "B_URL"],
+                                         column = ["B_ISBN", "B_name", "B_author", "B_price", "B_URL", "B_check_rent"],
+                                         displaycolumns = ["B_ISBN", "B_name", "B_author", "B_price", "B_URL", "B_check_rent"],
                                          height = 7, show = 'headings')
 
         Btreeview.grid(row = 3, column = 1)
@@ -828,27 +798,80 @@ def Bookwindow():
         Btreeview.column("B_check_rent", width=70, anchor="center")
         Btreeview.heading("B_check_rent", text="대출여부", anchor="center")
 
+        
+
+        df_book = pd.read_csv('Book.csv', encoding='UTF-8-sig')
+        list_from_df_book = (df_book.values).tolist()
+        treeValueList = list_from_df_book#도서명, 저자명 검색했을때
+        for i in range(len(treeValueList)):
+                Btreeview.insert("", "end", text="", values=treeValueList[i], iid=i)
+
+
         # 도서 정보
-        def Book_show(event): #가끔 수정, 삭제 안될 때 있는데 이유는 모르겠음
-            def change_book(): #모든 정보 입력 및 isbn, 도서명, 저자명, 출판사가 동일해야 수정가능...../도서등록하고 다시 실행하면 수정불가(이부분 수정필요)
-                cb_list = np.array([])
+        def Book_show(event): 
+            def change_book(): #도서수정
                 if Btextname.get()=='' or Btextauthor.get()=='' or Btextpubli.get()=='': #도서명, 저자, 출판사 하나라도 입력안되면 팝업창
                     messagebox.showinfo("경고,", "필수항목(도서명, 저자, 출판사)을 입력해주세요.\n")
                     return 0
-                if B.check_isbn(int(BtextISBN.get())):
-                    messagebox.showinfo("경고,", "등록되지 않은 도서입니다..\n")
-                    return 0
                 else:
-                    rent = '대출가능'
-                    cb_list = np.append(cb_list, np.array([int(BtextISBN.get()), Btextname.get(), Btextauthor.get(), Btextprice.get(), BtextURL.get(), Btextpubli.get(), rent]))
-                    B.CB_book(int(BtextISBN.get()))
-                    B.B_Info([cb_list])
-                    messagebox.showinfo("알림","도서 수정이 완료되었습니다.")# 팝업창
+                    df_rent = pd.read_csv('RENT.csv', encoding='UTF-8-sig')
+                    df_rent = df_rent.astype('str')
+                    if getValue[0] in df_rent['ISBN'].values:
+                        messagebox.showinfo("알림","대여 중인 도서는 삭제할 수 없습니다.")
+                        return 0
+                    else:
+                        try:
+                            df_rent = pd.read_csv('RENT.csv', encoding='UTF-8-sig')
+                            if R.check_isbn(int(BtextISBN.get())):
+                                messagebox.showinfo("경고","대여중인 도서는 수정할 수 없습니다.")
+                                return 0
+                            df_book = pd.read_csv('Book.csv', encoding='UTF-8-sig')
+                            dropindex = df_book.index[(df_book['ISBN'] == getValue[0])]
+                            df_book = df_book.drop(dropindex)
+                            df_book.reset_index
+                            df_book.to_csv("Book.csv", index = False, encoding= 'UTF-8-sig')
+                            rent = '대출가능'
+                            readd_book = {"ISBN" : BtextISBN.get(), "TITLE" : Btextname.get(), "AUTHOR" : Btextauthor.get(), "PRICE" : Btextprice.get(), "URL" : BtextURL.get(), "RENT" : rent, "PUB" : Btextpubli.get(), "PICTURE" :  Btextpicture.get()}
+                            df_book = df_book.append(readd_book, ignore_index=True)
+                            df_book.to_csv("Book.csv", index = False, encoding= 'UTF-8-sig')
+                            messagebox.showinfo("알림","도서 수정이 완료되었습니다.")# 팝업창
+                        except FileNotFoundError:
+                            messagebox.showinfo("경고", "존재하지 않는 사진 형식입니다.")
+                            return 0
+
                 
-            def delete_book(): # 모든 정보를 동일하게 입력해야 삭제 가능, 삭제 안될 때도 있음 기준은 모르겠음
-                B.CB_book(int(BtextISBN.get()))
-                messagebox.showinfo("알림","도서가 삭제되었습니다.") #도서삭제 팝업창
-                
+            def delete_book(): # 도서삭제
+                df_book = pd.read_csv('Book.csv', encoding='UTF-8-sig')
+                dropindex = df_book.index[(df_book['ISBN'] == getValue[0])]
+                response = messagebox.askokcancel('알림','도서를 삭제하시겠습니까?')
+                if response == 1:
+                    df_rent = pd.read_csv('RENT.csv', encoding='UTF-8-sig')
+                    if R.check_isbn(int(BtextISBN.get())):
+                        messagebox.showinfo("경고","대여중인 도서는 삭제할 수 없습니다.")
+                        return 0
+                    df_book = df_book.drop(dropindex)
+                    df_book.reset_index
+                    df_book.to_csv("Book.csv", index = False, encoding= 'UTF-8-sig')
+                    messagebox.showinfo("알림","도서가 삭제되었습니다.") #도서삭제 팝업창
+                else:
+                    messagebox.showinfo("알림","도서가 삭제가 취소되었습니다.")
+                    return 0
+
+            def Bpicturefind() : #수정할 사진 찾기
+                files = filedialog.askopenfilenames(title = "도서 사진을 선택하세요", filetypes = (("모든 파일", "*.*"), ("모든 파일", "*.*")), initialdir = r"도서사진")
+                if len(files) > 1:
+                    messagebox.showinfo("경고", "사진을 하나만 선택 하시오.")
+                    return
+                try:            #사진 찾는거 취소했을 때, 오류안뜨도록
+                    Btextpicture.delete(0, END)
+                    Btextpicture.insert(0, files[0])
+                except:
+                    pass
+
+            df_book = pd.read_csv('Book.csv', encoding='UTF-8-sig')
+            selectedItem = Btreeview.focus()
+            getValue = Btreeview.item(selectedItem).get('values')
+            
             bookshow = Toplevel(Book_window)
             bookshow.resizable(width = False, height = False)
             
@@ -862,68 +885,134 @@ def Bookwindow():
             BlabelISBN = Label(book_show_info, text="ISBN : ", fg = "#203864", bg = "white")
             BlabelISBN.grid(row=2, column=0, padx=60, pady = 3)
             BtextISBN = Entry(book_show_info)
+            BtextISBN.insert(0, getValue[0])
             BtextISBN.grid(row=2, column=1, padx=70, pady = 3)
 
             Blabelname = Label(book_show_info, text="도서명 : ", fg = "#203864", bg = "white")
             Btextname = Entry(book_show_info)
+            Btextname.insert(0, getValue[1])
             Blabelname.grid(row=3, column=0, padx=60, pady = 3)
             Btextname.grid(row=3, column=1, padx=70, pady = 3)
 
             Blabelauthor = Label(book_show_info, text="저자 : ", fg = "#203864", bg = "white")
             Btextauthor = Entry(book_show_info)
+            Btextauthor.insert(0, getValue[2])
             Blabelauthor.grid(row=4, column=0, padx=60, pady = 3)
             Btextauthor.grid(row=4, column=1, padx=70, pady = 3)
 
             Blabelpubli = Label(book_show_info, text="출판사 : ", fg = "#203864", bg = "white")
             Btextpubli = Entry(book_show_info)
+            Btextpubli.insert(0, getValue[6])
             Blabelpubli.grid(row=5, column=0, padx=60, pady = 3)
             Btextpubli.grid(row=5, column=1, padx=70, pady = 3)
 
             Blabelprice = Label(book_show_info, text="가격: ", fg = "#203864", bg = "white")
             Btextprice = Entry(book_show_info)
+            Btextprice.insert(0, getValue[3])
             Blabelprice.grid(row=6, column=0, padx=60, pady = 3)
             Btextprice.grid(row=6, column=1, padx=70, pady = 3)
 
             BlabelURL = Label(book_show_info, text="관련 URL : ", fg = "#203864", bg = "white") 
             BtextURL = Entry(book_show_info)
+            BtextURL.insert(0, getValue[4])
             BlabelURL.grid(row=7, column=0, padx=60, pady = 3)
             BtextURL.grid(row=7, column=1, padx=70, pady = 3)
 
+            Blabelpicture = Label(book_show_info, text = "도서 사진 : ", fg = "#203864", bg = "white")
+            Btextpicture = Entry(book_show_info)
+            Btextpicture.insert(0, getValue[7])
+            Blabelpicture.grid(row=8, column=0, padx=60, pady = 3)
+            Btextpicture.grid(row=8, column=1, padx=70, pady = 3)
+
+            pic_frame = Frame(book_show_info)
+            pic_frame.place(x = 490, y = 2)
+            pic = Image.open(getValue[7])
+            pic = pic.resize((135,175), Image.ANTIALIAS)
+            
+            pic_frame.picture = ImageTk.PhotoImage(pic)
+            pic_frame.label = Label(pic_frame, image = pic_frame.picture)
+            pic_frame.label.pack()
+            
             book_revice_btn = Button(book_show_info, text="수정", command = change_book)
             book_revice_btn.grid(row=10, column=0,padx=60, pady = 5)
 
             book_delete_btn = Button(book_show_info, text="삭제", command = delete_book)
             book_delete_btn.grid(row=10, column=1,padx=60, pady = 5)
 
+            book_picture_btn = Button(book_show_info, text="찾기", command = Bpicturefind)
+            book_picture_btn.place(x=410,y=163)
+
             book_exit_btn = Button(book_show_info, text="닫기", command=lambda: bookshow.destroy())
             book_exit_btn.grid(row=10, column=2, padx=70, pady = 5)
+
+            
 
         Btreeview.bind('<Double-1>', Book_show)
 
     def Bookadd(): #도서등록은 다 된거 같은데...
         checkbook = []
         def check(): #중복확인 함수
-            if B.check_book(Bname_text.get()): #
+            if B.check_book(int(BISBN_text1.get())): #
                 messagebox.showinfo("결과","이미 등록된 도서입니다.")
-            elif Bname_text.get() =='':
+            elif BISBN_text1.get() =='':
                 messagebox.showinfo("경고","도서명을 입력하세요.")
             else:
                 messagebox.showinfo("결과","등록 가능한 도서입니다.")
-                checkbook.append(Bname_text.get())
+                checkbook.append(BISBN_text1.get())
+    
         def addbook():
-            b_list = np.array([])
-            if Bname_text.get() not in checkbook: #중복확인 버튼 안누르면 팝업창
+            df_book=pd.read_csv('Book.csv', encoding='UTF-8-sig')
+            rent = '대출가능'
+            a=1
+            add_book = {"ISBN" : BISBN_text1.get(), "TITLE" : Bname_text.get(), "AUTHOR" : Bauthor_text.get(), "PRICE" : Bprice_text.get(),
+                        "URL" : BURL_text.get(),"RENT" : rent, "PUB" : Bpubli_text.get(), "EXPLANZTION" : Bexp_text.get(), "PICTURE" : Bpicture_text.get() }
+            if BISBN_text1.get() not in checkbook: #중복확인 버튼 안누르면 팝업창
                 messagebox.showinfo("경고","중복확인 하세요.")
                 return 0
             if Bname_text.get()=='' or Bauthor_text.get()=='' or Bpubli_text.get()=='': #도서명, 저자, 출판사 하나라도 입력안되면 팝업창
-                messagebox.showinfo("경고,", "필수항목(도서명, 저자, 출판사)을 입력해주세요.\n")
+                messagebox.showinfo("경고,", "필수항목(도서명, 저자, 출판사)을 입력해주세요.")
                 return 0
-            rent = '대출가능'
-            b_list = np.append(b_list, np.array([int(BISBN_text1.get()), Bname_text.get(), Bauthor_text.get(), Bprice_text.get(), BURL_text.get(), Bpubli_text.get(), rent]))
-            B.B_Info([b_list])
-            messagebox.showinfo("알림","도서 등록이 완료되었습니다.")# 팝업창
-            checkbook.remove(Bname_text.get()) #중복확인을 위한 리스트 비워주기
-            isbnlist.append(int(BISBN_text1.get()))
+            if len(BISBN_text1.get()) > 13:
+                messagebox.showinfo("경고", "도서명을 다시 입력하시오(1~13자)")
+                return 0
+            if len(Bname_text.get()) > 100:
+                messagebox.showinfo("경고", "도서명을 다시 입력하시오(1~100자)")
+                return 0
+            if len(Bauthor_text.get()) > 30:
+                messagebox.showinfo("경고", "도서명을 다시 입력하시오(1~30자)")
+                return 0
+            if len(Bpubli_text.get()) > 30:
+                messagebox.showinfo("경고", "도서명을 다시 입력하시오(1~30자)")
+                return 0
+            if len(BISBN_text1.get()) > 255:
+                messagebox.showinfo("경고", "도서명을 다시 입력하시오(1~255자)")
+                return 0
+            if not Bpicture_text.get() :
+                messagebox.showinfo("경고", "사진을 등록하세요")
+                return 0
+            else:
+                #사진크기
+                try:
+                    testimage = Image.open(Bpicture_text.get())
+                    testimage = testimage.resize((160, 130))
+                    df_book = df_book.append(add_book, ignore_index=True)
+                    df_book.to_csv("Book.csv", index = False, encoding= 'UTF-8-sig')
+                    messagebox.showinfo("알림","도서 등록이 완료되었습니다.")# 팝업창
+                except FileNotFoundError:
+                    messagebox.showinfo("경고", "존재하지 않는 사진 형식입니다.")
+                    checkbook.remove(Bname_text.get()) #중복확인을 위한 리스트 비워주기
+                    return 0
+            checkbook.remove(BISBN_text1.get()) #중복확인을 위한 리스트 비워주기
+        def findpicture() : #사진 찾기
+            files = filedialog.askopenfilenames(title = "도서 사진을 선택하세요", filetypes = (("모든 파일", "*.*"), ("모든 파일", "*.*")), initialdir = r"도서사진")
+            if len(files) > 1 :
+                messagebox.showinfo("경고", "사진을 하나만 선택 하세요.")
+                return
+            try:
+                Bpicture_text.delete(0, END)
+                Bpicture_text.insert(0, files[0])
+            except:
+                pass
 
         book_add = Frame(Book_window, borderwidth = 1, relief = "solid")
         book_add.place(x = 30, y = 120)
@@ -945,7 +1034,7 @@ def Bookwindow():
         Bname_text.grid(row=2, column=1, padx=50, pady = 5)
 
         Bname_check_btn = Button(book_add, text="중복확인", command = check)
-        Bname_check_btn.grid(row=2, column=2, padx=20, pady = 5)
+        Bname_check_btn.grid(row=1, column=2, padx=20, pady = 5)
 
         Bauthor_add = Label(book_add, text="저자 : ", fg = "#203864", bg = "white")
         Bauthor_text = Entry(book_add, width = 50) 
@@ -967,11 +1056,24 @@ def Bookwindow():
         BURL_label.grid(row=6, column=0, padx=10, pady = 5)
         BURL_text.grid(row=6, column=1, padx=50, pady = 5)
 
+        Bexp_label = Label(book_add, text="도서 설명 : ", fg = "#203864", bg = "white")
+        Bexp_text = Entry(book_add, width = 50) 
+        Bexp_label.grid(row=7, column=0, padx=10, pady = 5)
+        Bexp_text.grid(row=7, column=1, padx=50, pady = 5)
+
+        Bpicture_label = Label(book_add, text="사 진 : ", fg = "#203864", bg = "white") 
+        Bpicture_text = Entry(book_add, width = 50) 
+        Bpicture_label.grid(row=8, column=0, padx=10, pady = 5)
+        Bpicture_text.grid(row=8, column=1, padx=50, pady = 5)
+         
+        Bpicture_search_btn = Button(book_add, text="찾기", command = findpicture)
+        Bpicture_search_btn.grid(row=8, column=2, padx=20, pady = 5)
+
         bser_add_btn = Button(book_add, text= "등록", command = addbook)
-        bser_add_btn.grid(row = 8, column = 1, padx = 20, pady = 20)
+        bser_add_btn.grid(row = 9, column = 1, padx = 20, pady = 20)
 
         bser_exit_btn = Button(book_add, text="닫기", command=lambda: book_add.destroy())
-        bser_exit_btn.grid(row=8, column=2, padx=20, pady = 5)
+        bser_exit_btn.grid(row=9, column=2, padx=20, pady = 5)
     
     Book_window = Toplevel(window)
     Book_window.geometry("700x500")
