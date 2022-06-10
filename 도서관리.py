@@ -714,7 +714,7 @@ def Userwindow(): # 메인화면에서 회원 클릭
 df_book=pd.read_csv('Book.csv', encoding='UTF-8-sig')
 book_list=np.array([])
 book_list=np.append(book_list,df_book)
-book_list=np.reshape(book_list,(int(book_list.size/8),8))
+book_list=np.reshape(book_list,(int(book_list.size/9),9))
 df=pd.read_csv('RENT.csv', encoding='UTF-8') 
 rent_list=np.array([]) # 넘파이 빈리스트 생성
 rent_list=np.append(rent_list,df) # 값들을 append를 사용해 추가
@@ -1091,101 +1091,158 @@ def Bookwindow():
     book_btn.grid(row = 0, column = 0)
     book_btn1.grid(row = 0, column = 1)
 
-## 대여
-# 회원 -> 도서 선택 눌렀을때 조회 / 반납에 추가 안됨
-# 대여(회원)에 선택 누르면 인덱스에러 뜸..
-# 반납할 목록 없을때 뜨는 예외처리 해야할듯
 
+## 대여
 def Rentwindow():
-    # 회원 - 도서 대여
     def Rent_User_Search():
+        
         # 선택 버튼
         def Rent_User_Selected():
-            def printbook(): #도서조회 함수
-                sblist = np.array([])
-                if Bname_text.get():
-                    sblist = B.search_booktitle(Bname_text.get()) #도서명 입력된 경우
-                elif sear_Bauthor.get():
-                    sblist = B.search_bookauthor(sear_Bauthor.get()) #저자명 입력된 경우
-                else:
-                    messagebox.showinfo("경고","도서명과 저자명 하나라도 입력해주세요.")
-                Btreeview.delete(*Btreeview.get_children()) #다른거 조회하면 delete
-                for i in range(int(sblist.size/7)): #대출여부에 따라 문장 추가
-                    show=[]
-                    for j in range(0,6): #대출여부 외에는 그대로니 for문 사용
-                        show.append(sblist[i,j-1])
-                    Btreeview.insert("","end",text="",values=show,iid=i)
-
-            
-            selecteditem = Utreeview.focus()
-            getValue = Utreeview.item(selecteditem).get('values')
-
-            # 회원조회 후 -> 도서조회
-            BUrent_info = Toplevel(Rent_window)
-            BUrent_info.configure(background = "white")
-            BUrent_info.title("선택한 회원 : " + getValue[0])
-
-            BUrent_show_label = Label(BUrent_info, image = U_Brent_wall)
-            BUrent_show_label.pack()
-
-            BUrent_show_info = Frame(BUrent_info)
-            BUrent_show_info.place(x = 20, y = 80)
-            BUrent_show_info.configure(background = "white")
-
-            Bname_label = Label(BUrent_show_info, text = "도서명 : ", fg = "#203864", bg = "white")
-            Bname_label.grid(row = 0, column = 0, padx = 10, pady = 5)
-            Bname_text = Entry(BUrent_show_info, width = 50)
-            Bname_text.grid(row = 0, column = 1, padx = 10, pady = 5)
-            Bauthor_label = Label(BUrent_show_info, text = "저자 : ", fg = "#203864", bg = "white")
-            Bauthor_label.grid(row = 2, column = 0, padx = 10, pady = 5)
-            sear_Bauthor = Entry(BUrent_show_info, width = 50)
-            sear_Bauthor.grid(row = 2, column = 1, padx = 10, pady = 5)
-            
-            bsear_btn = Button(BUrent_show_info, text = "조회",command = printbook) # treeview에 조회정보 출력
-            bsear_btn.grid(row = 2, column = 2, padx = 20, pady = 5)
-            bsear_btn2 = Button(BUrent_show_info, text = "선택") # 이거 대여 안되는거같음 
-            bsear_btn2.grid(row = 4, column = 1, padx = 20, pady = 5)
-            bsear_btn3 = Button(BUrent_show_info, text = "닫기", command=lambda: BUrent_info.destroy())
-            bsear_btn3.grid(row = 4, column = 2, padx = 20, pady = 5)
-        
-            # 조회한 도서
-            Btreeview = tkinter.ttk.Treeview(BUrent_show_info,
-                                             column = ["B_ISBN", "B_name", "B_pub", "B_check_rent","B_author", "B_price", "B_URL"],
-                                             displaycolumns = ["B_ISBN", "B_name", "B_pub", "B_check_rent", "B_author", "B_price", "B_URL"],
-                                             height = 7, show = 'headings')            
-
-            Btreeview.grid(row = 3, column = 1)
-
-            Btreeview.column("B_ISBN", width=80, anchor="center")
-            Btreeview.heading("B_ISBN", text="ISBN", anchor="center")
-
-            Btreeview.column("B_name", width=100, anchor="center")
-            Btreeview.heading("B_name", text="도서명", anchor="center")
-
-            Btreeview.column("B_pub", width=70, anchor="center")
-            Btreeview.heading("B_pub", text="출판사", anchor="center")
-
-            Btreeview.column("B_check_rent", width=60, anchor="center")
-            Btreeview.heading("B_check_rent", text="대출여부", anchor="center")
-
-            Btreeview.column("B_author", width=60, anchor="center")
-            Btreeview.heading("B_author", text="저자", anchor="center")
-
-            Btreeview.column("B_price", width=50, anchor="center")
-            Btreeview.heading("B_price", text="가격", anchor="center")
-
-            Btreeview.column("B_URL", width=80, anchor="center")
-            Btreeview.heading("B_URL", text="정보 URL", anchor="center")
-
-            df_book = pd.read_csv('book1.csv', encoding = 'UTF-8-sig')
-            list_from_df_book = df_book.values.tolist()
-
-            # 대여(도서) 리스트
-            for i in range(len(df_user)):
-                list_from_df_book[i] = list_from_df_book[i][1:3] + list_from_df_book[i][6:7] + list_from_df_book[i][7:8] + list_from_df_book[i][3:6]
-                Btreeview.insert("", "end", text = "", values=list_from_df_book[i], iid = i)
-                Btreeview.bind("<Double-1>",Rent_User_Selected)
+            ##예외 처리추가
+            try:
+                selecteditem_user = Utreeview.focus()
+                getValue_user = Utreeview.item(selecteditem_user).get('values')
+                if getValue_user[5] >= 3 :
+                    messagebox.showinfo('경고','이미 대여하신 도서가 3권입니다.')
+                    return
+                ## (수정) 탈퇴했을 경우 추가
+                if getValue_user[6] == 'O':
+                    messagebox.showinfo('경고','탈퇴한 회원입니다.')
+                    return
                 
+                def printbook(): #도서조회 함수
+                    Btreeview.delete(*Btreeview.get_children()) #Utreeview의 모든 값들 제거
+
+                    for i in range(len(df_user)):               #이름, 연락처 검색한 것만 다시 조회
+                        if (Bname_text.get() in list_from_df_book[i][0]) & (sear_Bauthor.get() in list_from_df_book[i][2]) :
+                            Btreeview.insert("", "end", text = "", values=list_from_df_book[i], iid = i)
+                            Btreeview.bind("<Double-1>",Rent_User_Selected)
+                    
+
+                ## 추가 회원 선택 후 도서 선택
+                def book_select():
+                    try:
+                        selecteditem_book = Btreeview.focus()
+                        getValue_book = Btreeview.item(selecteditem_book).get('values')
+
+                        if getValue_book[3] == '대출 중':
+                            messagebox.showinfo('경고!','이미 대출 중인 도서입니다!')
+
+                        else:
+
+                            response = messagebox.askokcancel('도서 대여',getValue[0] + ' 회원님으로 '
+                                                          + getValue_book[1] + ' 도서를 대여하시겠습니까?')
+                            
+                            if response == 1:
+                                df_user = pd.read_csv('USER1.csv',encoding = 'cp949')
+                                df_book = pd.read_csv('Book.csv',encoding = 'cp949')
+                                df_rent = pd.read_csv('RENT.csv',encoding = 'cp949')
+
+                                cnt_index = df_user.index[(df_user['PHONE']) == (getValue[2])]
+
+                                if (df_user['RENT_CNT'][cnt_index[0]]) > 3 : # 대여한 도서가 3권일 때
+                                    messagebox.showinfo('경고!','이미 대여한 도서가 3권입니다!')
+                                    BUrent_info.destroy()
+                                else :
+                                    messagebox.showinfo('대여 완료','도서가 대여되었습니다.')
+
+                                    plus_day = 14
+                                    today = dt.date.today()
+                                    new_list = [[0,1, df_book.loc[df_book.index[0]]['ISBN'], getValue_book[1], getValue[0],
+                                            today, today + dt.timedelta(days = plus_day),'대여 중',getValue[2]]]
+                                
+                                    df_list = pd.DataFrame(new_list, columns = df_rent.columns)
+                                    df_rent = pd.concat([df_rent,df_list], axis = 0)
+                                    
+                                    df_rent.to_csv('RENT.csv',index = False, encoding= 'cp949')
+
+                                    cnt_index = df_user.index[(df_user['PHONE']) == (getValue[2])]
+                                    df_user['RENT_CNT'][cnt_index[0]] += 1  # RENT_CNT 1 추가(대여횟수 증가)
+                                    df_user.to_csv("USER1.csv",index= False,encoding = 'cp949')
+
+                                df_book_index = df_book.index[(df_book['TITLE'] == getValue_book[1])]
+                                
+                                if (df_book.loc[df_book_index[0],'RENT'] == "대여 가능"):
+                                    df_book.loc[df_book_index[0],'RENT'] = "대출 중"
+                                    df_book.to_csv("Book.csv",index = False, encoding = 'cp949')
+                                
+             
+                            else : # 도서 선택 -> 유저 선택 버튼 누르고 대여취소, response
+                                messagebox.showinfo('대여 취소','대여가 취소되었습니다.')
+                    except:
+                        messagebox.showinfo('경고','도서를 선택해주세요!')
+            
+                selecteditem = Utreeview.focus()
+                getValue = Utreeview.item(selecteditem).get('values')
+
+                # 회원조회 후 -> 도서조회
+                BUrent_info = Toplevel(Rent_window)
+                BUrent_info.configure(background = "white")
+                BUrent_info.title("선택한 회원 : " + getValue[0])
+
+                BUrent_show_label = Label(BUrent_info, image = U_Brent_wall)
+                BUrent_show_label.pack()
+
+                BUrent_show_info = Frame(BUrent_info)
+                BUrent_show_info.place(x = 20, y = 80)
+                BUrent_show_info.configure(background = "white")
+                
+                Bname_label = Label(BUrent_show_info, text = "도서명 : ", fg = "#203864", bg = "white")
+                Bname_label.grid(row = 0, column = 0, padx = 10, pady = 5)
+                Bname_text = Entry(BUrent_show_info, width = 50)
+                Bname_text.grid(row = 0, column = 1, padx = 10, pady = 5)
+                Bauthor_label = Label(BUrent_show_info, text = "저자 : ", fg = "#203864", bg = "white")
+                Bauthor_label.grid(row = 2, column = 0, padx = 10, pady = 5)
+                sear_Bauthor = Entry(BUrent_show_info, width = 50)
+                sear_Bauthor.grid(row = 2, column = 1, padx = 10, pady = 5)
+                
+                bsear_btn = Button(BUrent_show_info, text = "조회",command = printbook) # treeview에 조회정보 출력
+                bsear_btn.grid(row = 2, column = 2, padx = 20, pady = 5)
+                bsear_btn2 = Button(BUrent_show_info, text = "선택", command = book_select) # 이거 대여 안되는거같음 
+                bsear_btn2.grid(row = 4, column = 1, padx = 20, pady = 5)
+                bsear_btn3 = Button(BUrent_show_info, text = "닫기", command=lambda: BUrent_info.destroy())
+                bsear_btn3.grid(row = 4, column = 2, padx = 20, pady = 5)
+            
+                # 조회한 도서
+                Btreeview = tkinter.ttk.Treeview(BUrent_show_info,
+                                                 column = ["B_ISBN", "B_name", "B_pub", "B_check_rent","B_author", "B_price", "B_URL"],
+                                                 displaycolumns = ["B_ISBN", "B_name", "B_pub", "B_check_rent", "B_author", "B_price", "B_URL"],
+                                                 height = 7, show = 'headings')            
+
+                Btreeview.grid(row = 3, column = 1)
+
+                Btreeview.column("B_ISBN", width=80, anchor="center")
+                Btreeview.heading("B_ISBN", text="ISBN", anchor="center")
+
+                Btreeview.column("B_name", width=100, anchor="center")
+                Btreeview.heading("B_name", text="도서명", anchor="center")
+
+                Btreeview.column("B_pub", width=70, anchor="center")
+                Btreeview.heading("B_pub", text="출판사", anchor="center")
+
+                Btreeview.column("B_check_rent", width=60, anchor="center")
+                Btreeview.heading("B_check_rent", text="대출여부", anchor="center")
+
+                Btreeview.column("B_author", width=60, anchor="center")
+                Btreeview.heading("B_author", text="저자", anchor="center")
+
+                Btreeview.column("B_price", width=50, anchor="center")
+                Btreeview.heading("B_price", text="가격", anchor="center")
+
+                Btreeview.column("B_URL", width=80, anchor="center")
+                Btreeview.heading("B_URL", text="정보 URL", anchor="center")
+
+                df_book = pd.read_csv('Book.csv', encoding = 'UTF-8-sig')
+                list_from_df_book = df_book.values.tolist()
+
+                # 대여(도서) 도서 리스트
+                for i in range(len(df_book)):
+                    list_from_df_book[i] = list_from_df_book[i][1:3] + list_from_df_book[i][6:7] + list_from_df_book[i][7:] + list_from_df_book[i][3:6]
+                    Btreeview.insert("", "end", text = "", values=list_from_df_book[i], iid = i)
+                    Btreeview.bind("<Double-1>",Rent_User_Selected)
+                
+            except:
+                messagebox.showinfo('경고','회원을 선택해주세요!')    
             
         def Searched_user():    #이름, 연락처 검색했을 때
             Utreeview.delete(*Utreeview.get_children()) #Utreeview의 모든 값들 제거
@@ -1195,6 +1252,7 @@ def Rentwindow():
                     Utreeview.insert("", "end", text = "", values=list_from_df_user[i], iid = i)
                     Utreeview.bind("<Double-1>",Rent_User_Selected)
             
+    
         # 대여(회원) 프레임
         Rent_user_info = Frame(Rent_window, borderwidth = 1, relief = "solid")
         Rent_user_info.place(x = 30, y = 120)
@@ -1215,6 +1273,7 @@ def Rentwindow():
         usear_btn2.grid(row = 4, column = 1, padx = 20, pady = 5)
         usear_btn3 = Button(Rent_user_info, text = "닫기", command=lambda: Rent_user_info.destroy())
         usear_btn3.grid(row = 4, column = 2, padx = 20, pady = 5)
+        
         
         # 조회한 회원
         Utreeview = tkinter.ttk.Treeview(Rent_user_info,
@@ -1241,173 +1300,188 @@ def Rentwindow():
         df_user = pd.read_csv('USER1.csv', encoding = 'utf-8-sig')
         list_from_df_user = df_user.values.tolist()
 
+
         for i in range(len(df_user)):
             
             if list_from_df_user[i][4] == 1:
                 list_from_df_user[i][4] = "남자"
             else:
                 list_from_df_user[i][4] = "여자"
-            list_from_df_user[i] = list_from_df_user[i][2:3] + list_from_df_user[i][3:4] + list_from_df_user[i][1:2] + list_from_df_user[i][4:]
+            ## (수정)탈퇴여부 수정 완료
+            if list_from_df_user[i][9] == 1:
+                list_from_df_user[i][9] = "O"
+            else :
+                list_from_df_user[i][9] = "X"
+            list_from_df_user[i] = list_from_df_user[i][2:3] + list_from_df_user[i][3:4] + list_from_df_user[i][1:2] + list_from_df_user[i][4:6] + list_from_df_user[i][8:]
             Utreeview.insert("", "end", text = "", values=list_from_df_user[i], iid = i)
             Utreeview.bind("<Double-1>",Rent_User_Selected)
 
-        # 여기까지
+        
     
-    # 도서 - 회원 대여
+        
     def rent_book():
+        ##도서 조회함수 수정
         def printbook(): #대여(도서)에서 도서조회 함수
-            sblist = np.array([])
-            if Brent_name_text.get():
-                sblist = B.search_booktitle(Brent_name_text.get()) #도서명 입력된 경우
-            elif sear_Bauthor.get():
-                sblist = B.search_bookauthor(sear_Bauthor.get()) #저자명 입력된 경우
-            else:
-                messagebox.showinfo("경고","도서명과 저자명 하나라도 입력해주세요.")
-            Brent_treeview.delete(*Brent_treeview.get_children()) #다른거 조회하면 delete
-            for i in range(int(sblist.size/7)): #대출여부에 따라 문장 추가
-                show=[]
-                for j in range(2,8,4): #대출여부 외에는 그대로니 for문 사용
-                    show.append(sblist[i,j-1])
-                Brent_treeview.insert("","end",text="",values=show,iid=i)
+            df_book = pd.read_csv('Book.csv', encoding='cp949')
+            df_book = df_book.astype('str')
+            list_from_df_book = (df_book.values).tolist()
+            treeValueList = list_from_df_book #도서명 검색했을때
+            Brent_treeview.delete(*Brent_treeview.get_children()) #Brent_treeview의 모든 값들 제거
+            
+            for i in range(len(df_book)):           
+                if (Brent_name_text.get() in list_from_df_book[i][2]) :
+                    Brent_treeview.insert("", "end", text = "", values=list_from_df_book[i][2:3]+list_from_df_book[i][6:], iid = i)
+                    
+                    
             
         
-        # 도서에서 선택 버튼눌렀을 때 출력되는 회원 화면
+        # 선택 버튼눌렀을 때 출력되는 화면
         def Rent_Search_book_user() :
+
             def Searched_user():    #이름, 연락처 검색했을 때
                 Utreeview.delete(*Utreeview.get_children()) #Utreeview의 모든 값들 제거
 
-                df_user = pd.read_csv('USER1.csv',encoding = 'utf-8-sig')
+                df_user = pd.read_csv('USER1.csv',encoding = 'cp949')
 
                 for i in range(len(df_user)):               #이름, 연락처 검색한 것만 다시 조회
                     if (BUrent_name_text.get() in list_from_df_user[i][0]) & (Bsear_Uphone.get() in list_from_df_user[i][2]) :
                         Utreeview.insert("", "end", text = "", values=list_from_df_user[i], iid = i)
                         Utreeview.bind("<Double-1>",Rent_Search_book_user)
 
-            selecteditem_book = Brent_treeview.focus()
-            getValue_book = Brent_treeview.item(selecteditem_book).get('values')
-
-            if getValue_book[2] == '대출 중':
-                messagebox.showinfo('경고!','이미 대출 중인 도서입니다!')
-
-            def select_User_in_Book(): #대여(도서) -> 유저 선택 후 선택버튼
-
-                selecteditem_user = Utreeview.focus()
-                getValue_user = Utreeview.item(selecteditem_user).get('values')
-
-                response = messagebox.askokcancel('도서 대여',getValue_user[0] + ' 회원님으로 '
-                                              + getValue_book[0] + ' 도서를 대여하시겠습니까?')
-                
-                if response == 1:
-                    df_user = pd.read_csv('USER1.csv',encoding = 'utf-8-sig')
-                    df_book = pd.read_csv('book1.csv',encoding = 'utf-8-sig')
-                    df_rent = pd.read_csv('RENT.csv',encoding = 'utf-8-sig')
-                    
-                    plus_day = 14
-                    today = dt.date.today()
-                    new_list = [[0,1, df_book.loc[df_book.index[0]]['ISBN'], getValue_book[0], getValue_user[0],
-                            today, today + dt.timedelta(days = plus_day),'대여 중',getValue_user[2]]]
-                    
-                    
-                    df_list = pd.DataFrame(new_list, columns = df_rent.columns)
-                    df_rent = pd.concat([df_rent,df_list], axis = 0)
-                    
-                    df_rent.to_csv('RENT.csv',index = False, encoding= 'utf-8-sig')
-
-                    cnt_index = df_user.index[(df_user['PHONE']) == (getValue_user[2])]
-
-                    if (df_user['RENT_CNT'][cnt_index[0]]) > 3 : # 대여한 도서가 3권일 때
-                        messagebox.showinfo('경고!','이미 대여한 도서가 3권입니다!')
-                    else :
-                        messagebox.showinfo('대여 완료','도서가 대여되었습니다.')
-                        df_user['RENT_CNT'][cnt_index[0]] += 1  # RENT_CNT 1 추가(대여횟수 증가)
-                        df_user.to_csv("USER1.csv",index= False,encoding = 'utf-8-sig')
-
-                    df_book_index = df_book.index[(df_book['TITLE'] == getValue_book[0])]
-                    
-                    if df_book['RENT'][df_book_index[0]] == "대출 중" :
-                        messagebox.showinfo('경고!','이미 대출 중인 도서 입니다!')
-                    else :
-                        df_book['RENT'][df_book_index[0]] = "대출 중"
-                        df_book.to_csv("book1.csv",index = False, encoding = 'utf-8-sig')
-
-                    
-                    
-
-
+            try:
             
-                else : # 도서 선택 -> 유저 선택 버튼 누르고 대여취소, response
-                    messagebox.showinfo('대여 취소','대여가 취소되었습니다.')
-                
-            # 도서 - 회원
-            BUrent_info = Toplevel(Rent_window)
-            BUrent_info.configure(background = "white")
-            BUrent_info.title("선택한 책 : " + getValue_book[0])
-            
-            BUrent_show_label = Label(BUrent_info, image = B_Urent_wall)
-            BUrent_show_label.pack()
+                selecteditem_book = Brent_treeview.focus()
+                getValue_book = Brent_treeview.item(selecteditem_book).get('values')
 
-            BUrent_show_info = Frame(BUrent_info)
-            BUrent_show_info.place(x = 20, y = 70)
-            BUrent_show_info.configure(background = "white")
+
+                if getValue_book[2] == '대출 중':
+                    messagebox.showinfo('경고!','이미 대출 중인 도서입니다!')
+                    return
+                ## 예외 처리 완료
+                def select_User_in_Book(): #대여(도서) -> 유저 선택 후 선택버튼
+                    try :
+                        selecteditem_user = Utreeview.focus()
+                        getValue_user = Utreeview.item(selecteditem_user).get('values')
+
+                        ## (수정) 탈퇴했을 경우 추가
+                        if getValue_user[6] == 'O':
+                            messagebox.showinfo('경고','탈퇴한 회원입니다.')
+                            return
+                         
+                        response = messagebox.askokcancel('도서 대여',getValue_user[0] + ' 회원님으로 '
+                                                      + getValue_book[0] + ' 도서를 대여하시겠습니까?')
+                        
+                        if response == 1:
+                            df_user = pd.read_csv('USER1.csv',encoding = 'cp949')
+                            df_book = pd.read_csv('Book.csv',encoding = 'cp949')
+                            df_rent = pd.read_csv('RENT.csv',encoding = 'cp949')
+                            
+                            plus_day = 14
+                            today = dt.date.today()
+                            new_list = [[0,1, df_book.loc[df_book.index[0]]['ISBN'], getValue_book[0], getValue_user[0],
+                                    today, today + dt.timedelta(days = plus_day),'대여 중',getValue_user[2]]]
+                            
+                            
+                            df_list = pd.DataFrame(new_list, columns = df_rent.columns)
+                            df_rent = pd.concat([df_rent,df_list], axis = 0)
+                            
+                            df_rent.to_csv('RENT.csv',index = False, encoding= 'cp949')
+
+                            cnt_index = df_user.index[(df_user['PHONE']) == (getValue_user[2])]
+                            df_user['RENT_CNT'][cnt_index[0]] += 1  # RENT_CNT 1 추가(대여횟수 증가)
+                            df_user.to_csv("USER1.csv",index= False,encoding = 'cp949')
+
+                            df_book_index = df_book.index[(df_book['TITLE'] == getValue_book[0])]
+                            
+                            if df_book['RENT'][df_book_index[0]] == "대출 중" :
+                                messagebox.showinfo('경고!','이미 대출 중인 도서 입니다!')
+                            else :
+                                df_book['RENT'][df_book_index[0]] = "대출 중"
+                                df_book.to_csv("Book.csv",index = False, encoding = 'cp949')
+                                messagebox.showinfo('대여 완료','도서가 대여되었습니다.')
+         
+                        else : # 도서 선택 -> 유저 선택 버튼 누르고 대여취소, response
+                            messagebox.showinfo('대여 취소','대여가 취소되었습니다.')
+                    except:
+                        messagebox.showinfo('경고','대여할 회원을 선택해주세요')
         
-            BUrent_name_label = Label(BUrent_show_info, text = "이름 : ", fg = "#203864", bg = "white")
-            BUrent_name_label.grid(row = 0, column = 0, padx = 10, pady = 5)
-            BUrent_name_text = Entry(BUrent_show_info, width = 50)
-            BUrent_name_text.grid(row = 0, column = 1, padx = 10, pady = 5)
-
-            BUphone_label = Label(BUrent_show_info, text = "연락처 : ", fg = "#203864", bg = "white")
-            BUphone_label.grid(row = 1, column = 0, padx = 10, pady = 5)
-            Bsear_Uphone = Entry(BUrent_show_info, width = 50)
-            Bsear_Uphone.grid(row = 1, column = 1, padx = 10, pady = 5)
-
-            BUrent_btn = Button(BUrent_show_info, text = "조회",command = Searched_user)
-            BUrent_btn.grid(row = 0, column = 2, padx = 20, pady = 5)
-            BUrent_btn2 = Button(BUrent_show_info, text = "선택",command = select_User_in_Book)
-            BUrent_btn2.grid(row = 3, column = 1, padx = 20, pady = 5)
-            bsear_btn3 = Button(BUrent_show_info, text = "닫기", command=lambda: BUrent_info.destroy())
-            bsear_btn3.grid(row = 3, column = 2, padx = 20, pady = 5)
-
-            Utreeview = tkinter.ttk.Treeview(BUrent_show_info,
-                                             column = ["U_name", "U_birth", "U_hp", "U_gender", "U_email", "U_check", "U_check_exit"],
-                                             displaycolumns = ["U_name", "U_birth", "U_hp", "U_gender", "U_email", "U_check", "U_check_exit"],
-                                             height = 7, show = 'headings')
-
-            Utreeview.grid(row = 2, column = 1)
-
-            Utreeview.column("U_name", width=50, anchor="center")
-            Utreeview.heading("U_name", text="이름", anchor="center")
-
-            Utreeview.column("U_birth", width=70, anchor="center")
-            Utreeview.heading("U_birth", text="생년월일", anchor="center")
-
-            Utreeview.column("U_hp", width=100, anchor="center")
-            Utreeview.heading("U_hp", text="전화번호", anchor="center")
-
-            Utreeview.column("U_gender", width=35, anchor="center")
-            Utreeview.heading("U_gender", text="성별", anchor="center")
-
-            Utreeview.column("U_email", width=100, anchor="center")
-            Utreeview.heading("U_email", text="메일", anchor="center")
-
-            Utreeview.column("U_check", width=70, anchor="center")
-            Utreeview.heading("U_check", text="대출여부", anchor="center")
-
-            Utreeview.column("U_check_exit", width=70, anchor="center")
-            Utreeview.heading("U_check_exit", text="탈퇴여부", anchor="center")
-
-            df_user = pd.read_csv('USER1.csv', encoding = 'utf-8-sig')
-            list_from_df_user = df_user.values.tolist()
-
-            for i in range(len(df_user)):
+                BUrent_info = Toplevel(Rent_window)
+                BUrent_info.configure(background = "white")
+                BUrent_info.title("선택한 책 : " + getValue_book[0])
                 
-                if list_from_df_user[i][4] == 1:
-                    list_from_df_user[i][4] = "남자"
-                else:
-                    list_from_df_user[i][4] = "여자"
-                list_from_df_user[i] = list_from_df_user[i][2:3] + list_from_df_user[i][3:4] + list_from_df_user[i][1:2] + list_from_df_user[i][4:]
-                Utreeview.insert("", "end", text = "", values=list_from_df_user[i], iid = i)
-                Utreeview.bind("<Double-1>",Rent_Search_book_user)
+                BUrent_show_label = Label(BUrent_info, image = B_Urent_wall)
+                BUrent_show_label.pack()
 
+                BUrent_show_info = Frame(BUrent_info)
+                BUrent_show_info.place(x = 20, y = 70)
+                BUrent_show_info.configure(background = "white")
+            
+                BUrent_name_label = Label(BUrent_info, text = "이름 : ", fg = "#203864", bg = "white")
+                BUrent_name_label.grid(row = 1, column = 0, padx = 10, pady = 5)
+                BUrent_name_text = Entry(BUrent_info, width = 50)
+                BUrent_name_text.grid(row = 1, column = 1, padx = 10, pady = 5)
+
+                BUphone_label = Label(BUrent_info, text = "연락처 : ", fg = "#203864", bg = "white")
+                BUphone_label.grid(row = 2, column = 0, padx = 10, pady = 5)
+                Bsear_Uphone = Entry(BUrent_info, width = 50)
+                Bsear_Uphone.grid(row = 2, column = 1, padx = 10, pady = 5)
+
+                BUrent_btn = Button(BUrent_show_info, text = "조회",command = Searched_user)
+                BUrent_btn.grid(row = 0, column = 2, padx = 20, pady = 5)
+                BUrent_btn2 = Button(BUrent_show_info, text = "선택",command = select_User_in_Book)
+                BUrent_btn2.grid(row = 3, column = 1, padx = 20, pady = 5)
+                bsear_btn3 = Button(BUrent_show_info, text = "닫기", command=lambda: BUrent_info.destroy())
+                bsear_btn3.grid(row = 3, column = 2, padx = 20, pady = 5)
+
+                Utreeview = tkinter.ttk.Treeview(BUrent_show_info,
+                                                 column = ["U_name", "U_birth", "U_hp", "U_gender", "U_email", "U_check", "U_check_exit"],
+                                                 displaycolumns = ["U_name", "U_birth", "U_hp", "U_gender", "U_email", "U_check", "U_check_exit"],
+                                                 height = 7, show = 'headings')
+
+                Utreeview.grid(row = 2, column = 1)
+
+                Utreeview.column("U_name", width=50, anchor="center")
+                Utreeview.heading("U_name", text="이름", anchor="center")
+
+                Utreeview.column("U_birth", width=70, anchor="center")
+                Utreeview.heading("U_birth", text="생년월일", anchor="center")
+
+                Utreeview.column("U_hp", width=100, anchor="center")
+                Utreeview.heading("U_hp", text="전화번호", anchor="center")
+
+                Utreeview.column("U_gender", width=35, anchor="center")
+                Utreeview.heading("U_gender", text="성별", anchor="center")
+
+                Utreeview.column("U_email", width=100, anchor="center")
+                Utreeview.heading("U_email", text="메일", anchor="center")
+
+                Utreeview.column("U_check", width=70, anchor="center")
+                Utreeview.heading("U_check", text="대출여부", anchor="center")
+
+                Utreeview.column("U_check_exit", width=70, anchor="center")
+                Utreeview.heading("U_check_exit", text="탈퇴여부", anchor="center")
+
+                df_user = pd.read_csv('USER1.csv', encoding = 'utf-8-sig')
+                list_from_df_user = df_user.values.tolist()
+                
+
+                for i in range(len(df_user)):
+                    
+                    if list_from_df_user[i][4] == 1:
+                        list_from_df_user[i][4] = "남자"
+                    else:
+                        list_from_df_user[i][4] = "여자"
+
+                    ## (수정)탈퇴여부 수정완료
+                    if list_from_df_user[i][9] == 1:
+                        list_from_df_user[i][9] = "O"
+                    else :
+                        list_from_df_user[i][9] = "X"
+                    list_from_df_user[i] = list_from_df_user[i][2:3] + list_from_df_user[i][3:4] + list_from_df_user[i][1:2] + list_from_df_user[i][4:6] + list_from_df_user[i][8:]
+                    Utreeview.insert("", "end", text = "", values=list_from_df_user[i], iid = i)
+                    Utreeview.bind("<Double-1>",Rent_Search_book_user)
+            except:
+                messagebox.showinfo('경고','대여할 도서를 선택해주세요')
         
         brent_info = Frame(Rent_window, borderwidth = 1, relief = "solid")
         brent_info.place(x = 90, y = 120)
@@ -1440,22 +1514,19 @@ def Rentwindow():
         Brent_treeview.column("BR_state", width=100, anchor="center")
         Brent_treeview.heading("BR_state", text="대출상태", anchor="center")
 
-        df_book = pd.read_csv('book1.csv', encoding = 'utf-8-sig')
+        df_book = pd.read_csv('Book.csv', encoding = 'utf-8-sig')
         list_from_df_book = df_book.values.tolist()
-        
+
         for i in range(len(df_book)):
             list_from_df_book[i] = list_from_df_book[i][2:3] + list_from_df_book[i][6:7] + list_from_df_book[i][7:8]
             Brent_treeview.insert("", "end", text = "", values=list_from_df_book[i], iid = i)
-
+      
     def rent_user():
         Urent_info = Frame(Rent_window, borderwidth = 1, relief = "solid")
         Urent_info.place(x = 90, y = 120)
         Urent_info.configure(background = "white")
-        # font 한글도 가능한건가...
         urent_label = Label(Urent_info, text = "대여(회원)", font = ("맑은 고딕", 20), fg = "#203864", bg = "white")
         urent_label.grid(row = 0, column = 1, padx = 80, pady = 10)
-        ## X_btn = Button(user_info, image = X, bd = 0, bg = "white", command = lambda:frameexit(user_info))
-        ## X_btn.grid(row = 0, column = 2)
 
         Urent_name_label = Label(Urent_info, text = "회원명 : ", fg = "#203864", bg = "white")
         Urent_name_label.grid(row = 1, column = 0, padx = 10, pady = 5)
@@ -1467,41 +1538,54 @@ def Rentwindow():
 
     def rent_return():
 
-        def rent_return_selected(): #도서 반납 선택버튼
-
-            selecteditem = rent_treeview.focus()
-            getValue = rent_treeview.item(selecteditem).get('values')
+        ##추가
+        def rent_search() : # 대여한 회원과 도서 조회
+            df_rent = pd.read_csv('RENT.csv',encoding = 'cp949')
+            rent_treeview.delete(*rent_treeview.get_children()) #rent_treeview의 모든 값들 제거
             
-            df_rent = pd.read_csv('RENT.csv',encoding = 'utf-8-sig')
-            response = messagebox.askokcancel('도서 반납',getValue[1] + ' 회원님이 대여한 '
-                                              + getValue[0] + ' 도서를 반납하시겠습니까?')
-            
-            if response == 1:
-                df_rent = pd.read_csv('RENT.csv',encoding = 'utf-8-sig')
-                dropindex = df_rent.index[(df_rent['TITLE'] == getValue[0])]
-                df_rent.drop(dropindex, inplace = True)
-                df_rent.reset_index(drop=True, inplace = True)
-                
-                df_rent.to_csv("RENT.csv",index = False,encoding = 'utf-8-sig')
-
-                df_user = pd.read_csv('USER1.csv',encoding = 'cp949')
-                df_book = pd.read_csv('book1.csv',encoding = 'cp949')
-
-                cnt_index = df_user.index[(df_user['NAME']) == (getValue[1])]
-                df_user['RENT_CNT'][cnt_index[0]] -= 1
-
-                df_book_index = df_book.index[(df_book['TITLE'] == getValue[0])]
+            for i in range(len(df_rent)):               #이름, 연락처 검색한 것만 다시 조회
+                if (rent_bname_text.get() in list_from_df_rent[i][0]) & (rent_uname_text.get() in list_from_df_rent[i][1]) :
+                    rent_treeview.insert("", "end", text = "", values=list_from_df_rent[i], iid = i)
+            rent_treeview.bind("<Double-1>",rent_return)
                     
-                if df_book['RENT'][df_book_index[0]] == "대출 중" :
-                    df_book['RENT'][df_book_index[0]] = "대여 가능"
-                    df_book.to_csv('book1.csv',index = False, encoding = 'utf-8-sig')
-                
-                messagebox.showinfo('반납 완료','도서가 반납되었습니다.')
-            else :
-                messagebox.showinfo('반납 취소','반납이 취소되었습니다.')
-                
 
-        # 조회/반납 목록 없으면 뜨는 오류 해결해야함
+        def rent_return_selected(): #도서 반납 선택버튼
+            ##예외 처리 추가
+            try:
+                selecteditem = rent_treeview.focus()
+                getValue = rent_treeview.item(selecteditem).get('values')
+                
+                df_rent = pd.read_csv('RENT.csv',encoding = 'cp949')
+                response = messagebox.askokcancel('도서 반납',getValue[1] + ' 회원님이 대여한 '
+                                                  + getValue[0] + ' 도서를 반납하시겠습니까?')
+                
+                if response == 1:
+                    df_rent = pd.read_csv('RENT.csv',encoding = 'cp949')
+                    dropindex = df_rent.index[(df_rent['TITLE'] == getValue[0])]
+                    df_rent.drop(dropindex, inplace = True)
+                    df_rent.reset_index(drop=True, inplace = True)
+                    
+                    df_rent.to_csv("RENT.csv",index = False,encoding = 'cp949')
+
+                    df_user = pd.read_csv('USER1.csv',encoding = 'cp949')
+                    df_book = pd.read_csv('Book.csv',encoding = 'cp949')
+
+                    cnt_index = df_user.index[(df_user['NAME']) == (getValue[1])]
+                    df_user['RENT_CNT'][cnt_index[0]] -= 1
+                    df_user.to_csv("USER1.csv",index = False, encoding = 'cp949')
+
+                    df_book_index = df_book.index[(df_book['TITLE'] == getValue[0])]
+                        
+                    if df_book['RENT'][df_book_index[0]] == "대출 중" :
+                        df_book['RENT'][df_book_index[0]] = "대여 가능"
+                        df_book.to_csv('Book.csv',index = False, encoding = 'cp949')
+                    
+                    messagebox.showinfo('반납 완료','도서가 반납되었습니다.')
+                else :
+                    messagebox.showinfo('반납 취소','반납이 취소되었습니다.')
+            except:
+                messagebox.showinfo('경고','도서나 회원을 선택해주세요!')
+            
         rent_info = Frame(Rent_window, borderwidth = 1, relief = "solid")
         rent_info.place(x = 30, y = 120)
         rent_info.configure(background = "white")
@@ -1516,7 +1600,7 @@ def Rentwindow():
         rent_uname_label.grid(row = 2, column = 0, padx = 10, pady = 5)
         rent_uname_text = Entry(rent_info, width = 50)
         rent_uname_text.grid(row = 2, column = 1, padx = 10, pady = 5)
-        rsear_btn = Button(rent_info, text = "조회")
+        rsear_btn = Button(rent_info, text = "조회", command = rent_search)
         rsear_btn.grid(row = 2, column = 2, padx = 20, pady = 5)
         rsear_btn2 = Button(rent_info, text = "선택",command = rent_return_selected)
         rsear_btn2.grid(row = 4, column = 1, padx = 20, pady = 5)
@@ -1552,9 +1636,9 @@ def Rentwindow():
             list_from_df_rent[i] = list_from_df_rent[i][3:]
             rent_treeview.insert("", "end", text = "", values=list_from_df_rent[i], iid = i)
             rent_treeview.bind("<Double-1>",rent_return)
-
+        
     Rent_window = Toplevel(window)
-    Rent_window.geometry("700x500")
+    Rent_window.geometry("700x530")
     Rent_window.resizable(width = False, height = False)
 
     rent_wall_label = Label(Rent_window, image = de_wall)
