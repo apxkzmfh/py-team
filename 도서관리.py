@@ -116,10 +116,10 @@ def Userwindow(): # 메인화면에서 회원 클릭
                     messagebox.showinfo("회원 수정 성공", "수정이 완료되었습니다.", parent=user_show)
                     df_user = df_user.set_index('Unnamed: 0')
                     df_user = df_user.reset_index()
-                    df_user.to_csv("USER1.csv", index = False, encoding= 'UTF-8-sig')
+                    df_user.to_csv("USER.csv", index = False, encoding= 'UTF-8-sig')
                     user_show.destroy()
                     Usersearch()
-                df_user = pd.read_csv('USER1.csv', encoding = 'UTF-8', index_col = 'PHONE')
+                df_user = pd.read_csv('USER.csv', encoding = 'UTF-8', index_col = 'PHONE')
                 
             def Delete():   #회원 삭제
                 #getValue 여기도 있음(더블클릭한 treeview 값)
@@ -152,7 +152,7 @@ def Userwindow(): # 메인화면에서 회원 클릭
                 df_user = df_user.reset_index()
                 df_user = df_user.set_index('Unnamed: 0')
                 df_user = df_user.reset_index()
-                df_user.to_csv("USER1.csv", index = False, encoding= 'UTF-8-sig')
+                df_user.to_csv("USER.csv", index = False, encoding= 'UTF-8-sig')
                 user_show.destroy()
                 Usersearch()
             def combo(event) : #메일 직접 입력
@@ -304,7 +304,7 @@ def Userwindow(): # 메인화면에서 회원 클릭
             mail_combo.place(x = 350, y = 200)
 
             #사진주소(이미지X)
-            df_user = pd.read_csv('USER1.csv', encoding = 'UTF-8', index_col = 'PHONE')
+            df_user = pd.read_csv('USER.csv', encoding = 'UTF-8', index_col = 'PHONE')
             pic_lab = Label(user_show_info, text = "사진 : ", font = ("맑은 고딕", 12), fg = "#203864", bg = "white")
             pic_lab.grid(row = 5, column = 0, pady = 10)
             pic_text = Entry(user_show_info, width = 30)
@@ -417,11 +417,9 @@ def Userwindow(): # 메인화면에서 회원 클릭
 
         Utreeview.column("U_check_for_exit", width=70, anchor="center")
         Utreeview.heading("U_check_for_exit", text="탈퇴여부", anchor="center")
-
-        Utreeview["show"] = "headings"
         
         try:
-            df_user = pd.read_csv('USER1.csv', encoding = 'UTF-8')
+            df_user = pd.read_csv('USER.csv', encoding = 'UTF-8')
             list_from_df_user = df_user.values.tolist()
             
             for i in range(len(list_from_df_user)):
@@ -497,7 +495,7 @@ def Userwindow(): # 메인화면에서 회원 클릭
                 messagebox.showinfo("입력 오류", "중복 확인 하십시오",parent = user_add)
                 return
             try:
-                df_user = pd.read_csv('USER1.csv', encoding = 'UTF-8')
+                df_user = pd.read_csv('USER.csv', encoding = 'UTF-8')
                 add_index = df_user.index[df_user['PHONE'] == Uphone]
                 if (df_user['PHONE'] == Uphone).any() :
                     df_user.loc[add_index, "PHONE"] = Uphone
@@ -511,7 +509,7 @@ def Userwindow(): # 메인화면에서 회원 클릭
                     df_user.loc[add_index, "DO_OUT"] = 0
                     df_user.loc[add_index, "PICTURE"] = picture_text.get()
                     messagebox.showinfo("회원 등록", "회원 재가입 성공",parent = user_add)
-                    df_user.to_csv("USER1.csv", index = False, encoding= 'UTF-8-sig')
+                    df_user.to_csv("USER.csv", index = False, encoding= 'UTF-8-sig')
                     Useradd()
                 else :
                     df_user = df_user.set_index('Unnamed: 0')
@@ -519,17 +517,17 @@ def Userwindow(): # 메인화면에서 회원 클릭
                     df_user = df_user.reset_index()
                     df_user.rename(columns={'index':'Unnamed: 0'}, inplace = True)
                     messagebox.showinfo("회원 등록", "회원 등록 성공",parent = user_add)
-                    df_user.to_csv("USER1.csv", index = False, encoding= 'UTF-8-sig')
+                    df_user.to_csv("USER.csv", index = False, encoding= 'UTF-8-sig')
                     Useradd()
             except:
                 df_user = pd.DataFrame(new_user, index = [0])
-                df_user.to_csv("USER1.csv", encoding = "UTF-8-sig")
+                df_user.to_csv("USER.csv", encoding = "UTF-8-sig")
                 messagebox.showinfo("회원 등록", "회원 등록 성공",parent = user_add)
                 Useradd()
         def Exist_check():  #중복 체크
             nonlocal existcheck         #상위 함수에 있는 중복 확인 체크용 변수
             try:
-                df_user = pd.read_csv('USER1.csv', encoding = 'UTF-8')
+                df_user = pd.read_csv('USER.csv', encoding = 'UTF-8')
                 Uphone = Uphone_text1.get() +'-' + Uphone_text2.get() + '-' + Uphone_text3.get()
                 
                 if (df_user['PHONE'] == Uphone).any() :
@@ -717,7 +715,6 @@ def Userwindow(): # 메인화면에서 회원 클릭
     User_window.geometry("700x500")
     User_window.resizable(width = False, height = False)
 
-
     user_wall_label = Label(User_window, image = de_wall)
     user_wall_label.place(x = -100, y = -2)
 
@@ -735,11 +732,11 @@ def Userwindow(): # 메인화면에서 회원 클릭
     
 ## 도서
     
-df_book=pd.read_csv('Book.csv', encoding='UTF-8-sig')
+df_book=pd.read_csv('BOOK.csv', encoding='UTF-8-sig')
 book_list=np.array([])
 book_list=np.append(book_list,df_book)
 book_list=np.reshape(book_list,(int(book_list.size/9),9))
-df=pd.read_csv('RENT.csv', encoding='UTF-8') 
+df=pd.read_csv('RENT.csv', encoding='cp949') 
 rent_list=np.array([]) # 넘파이 빈리스트 생성
 rent_list=np.append(rent_list,df) # 값들을 append를 사용해 추가
 rent_list=np.reshape(rent_list,(int(rent_list.size/9),9)) # size행 8열로 모양 변환
@@ -767,7 +764,7 @@ R=Book(rent_list)
 def Bookwindow():
     def Booksearch(): #조회도 다 된듯..?
         def printbook(): #도서조회 함수
-            df_book = pd.read_csv('Book.csv', encoding='UTF-8-sig')
+            df_book = pd.read_csv('BOOK.csv', encoding='UTF-8-sig')
             df_book = df_book.astype('str')
             list_from_df_book = (df_book.values).tolist()
             treeValueList = list_from_df_book#도서명, 저자명 검색했을때
@@ -822,9 +819,7 @@ def Bookwindow():
         Btreeview.column("B_check_rent", width=70, anchor="center")
         Btreeview.heading("B_check_rent", text="대출여부", anchor="center")
 
-        
-
-        df_book = pd.read_csv('Book.csv', encoding='UTF-8-sig')
+        df_book = pd.read_csv('BOOK.csv', encoding='UTF-8-sig')
         list_from_df_book = (df_book.values).tolist()
         treeValueList = list_from_df_book#도서명, 저자명 검색했을때
         for i in range(len(treeValueList)):
@@ -838,26 +833,26 @@ def Bookwindow():
                     messagebox.showinfo("경고,", "필수항목(도서명, 저자, 출판사)을 입력해주세요.\n")
                     return 0
                 else:
-                    df_rent = pd.read_csv('RENT.csv', encoding='UTF-8-sig')
+                    df_rent = pd.read_csv('RENT.csv', encoding='cp949')
                     df_rent = df_rent.astype('str')
                     if getValue[0] in df_rent['ISBN'].values:
                         messagebox.showinfo("알림","대여 중인 도서는 삭제할 수 없습니다.")
                         return 0
                     else:
                         try:
-                            df_rent = pd.read_csv('RENT.csv', encoding='UTF-8-sig')
+                            df_rent = pd.read_csv('RENT.csv', encoding='cp949')
                             if R.check_isbn(int(BtextISBN.get())):
                                 messagebox.showinfo("경고","대여중인 도서는 수정할 수 없습니다.")
                                 return 0
-                            df_book = pd.read_csv('Book.csv', encoding='UTF-8-sig')
+                            df_book = pd.read_csv('BOOK.csv', encoding='UTF-8-sig')
                             dropindex = df_book.index[(df_book['ISBN'] == getValue[0])]
                             df_book = df_book.drop(dropindex)
                             df_book.reset_index
-                            df_book.to_csv("Book.csv", index = False, encoding= 'UTF-8-sig')
+                            df_book.to_csv("BOOK.csv", index = False, encoding= 'UTF-8-sig')
                             rent = '대출가능'
                             readd_book = {"ISBN" : BtextISBN.get(), "TITLE" : Btextname.get(), "AUTHOR" : Btextauthor.get(), "PRICE" : Btextprice.get(), "URL" : BtextURL.get(), "RENT" : rent, "PUB" : Btextpubli.get(), "PICTURE" :  Btextpicture.get(), "EXPLANZTION" : Btextexp.get()}
                             df_book = df_book.append(readd_book, ignore_index=True)
-                            df_book.to_csv("Book.csv", index = False, encoding= 'UTF-8-sig')
+                            df_book.to_csv("BOOK.csv", index = False, encoding= 'UTF-8-sig')
                             messagebox.showinfo("알림","도서 수정이 완료되었습니다.")# 팝업창
                         except FileNotFoundError:
                             messagebox.showinfo("경고", "존재하지 않는 사진 형식입니다.")
@@ -865,17 +860,17 @@ def Bookwindow():
 
                 
             def delete_book(): # 도서삭제
-                df_book = pd.read_csv('Book.csv', encoding='UTF-8-sig')
+                df_book = pd.read_csv('BOOK.csv', encoding='UTF-8-sig')
                 dropindex = df_book.index[(df_book['ISBN'] == getValue[0])]
                 response = messagebox.askokcancel('알림','도서를 삭제하시겠습니까?')
                 if response == 1:
-                    df_rent = pd.read_csv('RENT.csv', encoding='UTF-8-sig')
+                    df_rent = pd.read_csv('RENT.csv', encoding='cp949')
                     if R.check_isbn(int(BtextISBN.get())):
                         messagebox.showinfo("경고","대여중인 도서는 삭제할 수 없습니다.")
                         return 0
                     df_book = df_book.drop(dropindex)
                     df_book.reset_index
-                    df_book.to_csv("Book.csv", index = False, encoding= 'UTF-8-sig')
+                    df_book.to_csv("BOOK.csv", index = False, encoding= 'UTF-8-sig')
                     messagebox.showinfo("알림","도서가 삭제되었습니다.") #도서삭제 팝업창
                 else:
                     messagebox.showinfo("알림","도서가 삭제가 취소되었습니다.")
@@ -892,7 +887,7 @@ def Bookwindow():
                 except:
                     pass
 
-            df_book = pd.read_csv('Book.csv', encoding='UTF-8-sig')
+            df_book = pd.read_csv('BOOK.csv', encoding='UTF-8-sig')
             selectedItem = Btreeview.focus()
             getValue = Btreeview.item(selectedItem).get('values')
             
@@ -991,7 +986,7 @@ def Bookwindow():
                 checkbook.append(BISBN_text1.get())
     
         def addbook():
-            df_book=pd.read_csv('Book.csv', encoding='UTF-8-sig')
+            df_book=pd.read_csv('BOOK.csv', encoding='UTF-8-sig')
             rent = '대출가능'
             a=1
             add_book = {"ISBN" : BISBN_text1.get(), "TITLE" : Bname_text.get(), "AUTHOR" : Bauthor_text.get(), "PRICE" : Bprice_text.get(),
@@ -1026,7 +1021,7 @@ def Bookwindow():
                     testimage = Image.open(Bpicture_text.get())
                     testimage = testimage.resize((160, 130))
                     df_book = df_book.append(add_book, ignore_index=True)
-                    df_book.to_csv("Book.csv", index = False, encoding= 'UTF-8-sig')
+                    df_book.to_csv("BOOK.csv", index = False, encoding= 'UTF-8-sig')
                     messagebox.showinfo("알림","도서 등록이 완료되었습니다.")# 팝업창
                 except FileNotFoundError:
                     messagebox.showinfo("경고", "존재하지 않는 사진 형식입니다.")
@@ -1150,56 +1145,56 @@ def Rentwindow():
 
                 ## 추가 회원 선택 후 도서 선택
                 def book_select():
-                    try:
-                        selecteditem_book = Btreeview.focus()
-                        getValue_book = Btreeview.item(selecteditem_book).get('values')
+                #try:
+                    selecteditem_book = Btreeview.focus()
+                    getValue_book = Btreeview.item(selecteditem_book).get('values')
 
-                        if getValue_book[3] == '대출 중':
-                            messagebox.showinfo('경고!','이미 대출 중인 도서입니다!')
+                    if getValue_book[3] == '대출 중':
+                        messagebox.showinfo('경고!','이미 대출 중인 도서입니다!')
 
-                        else:
+                    else:
 
-                            response = messagebox.askokcancel('도서 대여',getValue[0] + ' 회원님으로 '
-                                                          + getValue_book[1] + ' 도서를 대여하시겠습니까?')
+                        response = messagebox.askokcancel('도서 대여',getValue[0] + ' 회원님으로 '
+                                                      + getValue_book[1] + ' 도서를 대여하시겠습니까?')
+                        
+                        if response == 1:
+                            df_user = pd.read_csv('USER.csv',encoding = 'cp949')
+                            df_book = pd.read_csv('BOOK.csv',encoding = 'utf-8-sig')
+                            df_rent = pd.read_csv('RENT.csv',encoding = 'cp949')
+
+                            cnt_index = df_user.index[(df_user['PHONE']) == (getValue[2])]
+
+                            if (df_user['RENT_CNT'][cnt_index[0]]) > 3 : # 대여한 도서가 3권일 때
+                                messagebox.showinfo('경고!','이미 대여한 도서가 3권입니다!')
+                                BUrent_info.destroy()
+                            else :
+                                messagebox.showinfo('대여 완료','도서가 대여되었습니다.')
+
+                                plus_day = 14
+                                today = dt.date.today()
+                                new_list = [[0,1, df_book.loc[df_book.index[0]]['ISBN'], getValue_book[1], getValue[0],
+                                        today, today + dt.timedelta(days = plus_day),'대여 중',getValue[2]]]
                             
-                            if response == 1:
-                                df_user = pd.read_csv('USER1.csv',encoding = 'cp949')
-                                df_book = pd.read_csv('Book.csv',encoding = 'utf-8-sig')
-                                df_rent = pd.read_csv('RENT.csv',encoding = 'cp949')
+                                df_list = pd.DataFrame(new_list, columns = df_rent.columns)
+                                df_rent = pd.concat([df_rent,df_list], axis = 0)
+                                
+                                df_rent.to_csv('RENT.csv',index = False, encoding= 'cp949')
 
                                 cnt_index = df_user.index[(df_user['PHONE']) == (getValue[2])]
+                                df_user['RENT_CNT'][cnt_index[0]] += 1  # RENT_CNT 1 추가(대여횟수 증가)
+                                df_user.to_csv("USER.csv",index= False,encoding = 'cp949')
 
-                                if (df_user['RENT_CNT'][cnt_index[0]]) > 3 : # 대여한 도서가 3권일 때
-                                    messagebox.showinfo('경고!','이미 대여한 도서가 3권입니다!')
-                                    BUrent_info.destroy()
-                                else :
-                                    messagebox.showinfo('대여 완료','도서가 대여되었습니다.')
-
-                                    plus_day = 14
-                                    today = dt.date.today()
-                                    new_list = [[0,1, df_book.loc[df_book.index[0]]['ISBN'], getValue_book[1], getValue[0],
-                                            today, today + dt.timedelta(days = plus_day),'대여 중',getValue[2]]]
-                                
-                                    df_list = pd.DataFrame(new_list, columns = df_rent.columns)
-                                    df_rent = pd.concat([df_rent,df_list], axis = 0)
-                                    
-                                    df_rent.to_csv('RENT.csv',index = False, encoding= 'cp949')
-
-                                    cnt_index = df_user.index[(df_user['PHONE']) == (getValue[2])]
-                                    df_user['RENT_CNT'][cnt_index[0]] += 1  # RENT_CNT 1 추가(대여횟수 증가)
-                                    df_user.to_csv("USER1.csv",index= False,encoding = 'cp949')
-
-                                df_book_index = df_book.index[(df_book['TITLE'] == getValue_book[1])]
-                                
-                                if (df_book.loc[df_book_index[0],'RENT'] == "대여 가능"):
-                                    df_book.loc[df_book_index[0],'RENT'] = "대출 중"
-                                    df_book.to_csv("Book.csv",index = False, encoding = 'cp949')
-                                
-             
-                            else : # 도서 선택 -> 유저 선택 버튼 누르고 대여취소, response
-                                messagebox.showinfo('대여 취소','대여가 취소되었습니다.')
-                    except:
-                        messagebox.showinfo('경고','도서를 선택해주세요!')
+                            df_book_index = df_book.index[(df_book['TITLE'] == getValue_book[1])]
+                            
+                            if (df_book.loc[df_book_index[0],'RENT'] == "대여 가능"):
+                                df_book.loc[df_book_index[0],'RENT'] = "대출 중"
+                                df_book.to_csv("BOOK.csv",index = False, encoding = 'cp949')
+                            
+         
+                        else : # 도서 선택 -> 유저 선택 버튼 누르고 대여취소, response
+                            messagebox.showinfo('대여 취소','대여가 취소되었습니다.')
+                #except:
+                    messagebox.showinfo('경고','도서를 선택해주세요!')
             
                 selecteditem = Utreeview.focus()
                 getValue = Utreeview.item(selecteditem).get('values')
@@ -1261,7 +1256,7 @@ def Rentwindow():
                 Btreeview.column("B_URL", width=80, anchor="center")
                 Btreeview.heading("B_URL", text="정보 URL", anchor="center")
 
-                df_book = pd.read_csv('Book.csv', encoding = 'utf-8-sig')
+                df_book = pd.read_csv('BOOK.csv', encoding = 'utf-8-sig')
                 list_from_df_book = df_book.values.tolist()
 
                 # 대여(도서) 도서 리스트
@@ -1326,7 +1321,7 @@ def Rentwindow():
         Utreeview.column("U_check_exit", width=70, anchor="center")
         Utreeview.heading("U_check_exit", text="탈퇴여부", anchor="center")
 
-        df_user = pd.read_csv('USER1.csv', encoding = 'utf-8-sig')
+        df_user = pd.read_csv('USER.csv', encoding = 'cp949')
         list_from_df_user = df_user.values.tolist()
 
 
@@ -1351,7 +1346,7 @@ def Rentwindow():
     def rent_book():
         ##도서 조회함수 수정
         def printbook(): #대여(도서)에서 도서조회 함수
-            df_book = pd.read_csv('Book.csv', encoding='cp949')
+            df_book = pd.read_csv('BOOK.csv', encoding='cp949')
             df_book = df_book.astype('str')
             list_from_df_book = (df_book.values).tolist()
             treeValueList = list_from_df_book #도서명 검색했을때
@@ -1370,7 +1365,7 @@ def Rentwindow():
             def Searched_user():    #이름, 연락처 검색했을 때
                 Utreeview.delete(*Utreeview.get_children()) #Utreeview의 모든 값들 제거
 
-                df_user = pd.read_csv('USER1.csv',encoding = 'cp949')
+                df_user = pd.read_csv('USER.csv',encoding = 'cp949')
 
                 for i in range(len(df_user)):               #이름, 연락처 검색한 것만 다시 조회
                     if (BUrent_name_text.get() in list_from_df_user[i][0]) & (Bsear_Uphone.get() in list_from_df_user[i][2]) :
@@ -1401,8 +1396,8 @@ def Rentwindow():
                                                   + getValue_book[0] + ' 도서를 대여하시겠습니까?')
                     
                     if response == 1:
-                        df_user = pd.read_csv('USER1.csv',encoding = 'cp949')
-                        df_book = pd.read_csv('Book.csv',encoding = 'cp949')
+                        df_user = pd.read_csv('USER.csv',encoding = 'cp949')
+                        df_book = pd.read_csv('BOOK.csv',encoding = 'cp949')
                         df_rent = pd.read_csv('RENT.csv',encoding = 'cp949')
                         
                         plus_day = 14
@@ -1418,7 +1413,7 @@ def Rentwindow():
 
                         cnt_index = df_user.index[(df_user['PHONE']) == (getValue_user[2])]
                         df_user['RENT_CNT'][cnt_index[0]] += 1  # RENT_CNT 1 추가(대여횟수 증가)
-                        df_user.to_csv("USER1.csv",index= False,encoding = 'cp949')
+                        df_user.to_csv("USER.csv",index= False,encoding = 'cp949')
 
                         df_book_index = df_book.index[(df_book['TITLE'] == getValue_book[0])]
                         
@@ -1426,7 +1421,7 @@ def Rentwindow():
                             messagebox.showinfo('경고!','이미 대출 중인 도서 입니다!')
                         else :
                             df_book['RENT'][df_book_index[0]] = "대출 중"
-                            df_book.to_csv("Book.csv",index = False, encoding = 'cp949')
+                            df_book.to_csv("BOOK.csv",index = False, encoding = 'cp949')
                             messagebox.showinfo('대여 완료','도서가 대여되었습니다.')
      
                     else : # 도서 선택 -> 유저 선택 버튼 누르고 대여취소, response
@@ -1491,7 +1486,7 @@ def Rentwindow():
             Utreeview.column("U_check_exit", width=70, anchor="center")
             Utreeview.heading("U_check_exit", text="탈퇴여부", anchor="center")
 
-            df_user = pd.read_csv('USER1.csv', encoding = 'utf-8-sig')
+            df_user = pd.read_csv('USER.csv', encoding = 'utf-8-sig')
             list_from_df_user = df_user.values.tolist()
             
 
@@ -1543,7 +1538,7 @@ def Rentwindow():
         Brent_treeview.column("BR_state", width=100, anchor="center")
         Brent_treeview.heading("BR_state", text="대출상태", anchor="center")
 
-        df_book = pd.read_csv('Book.csv', encoding = 'utf-8-sig')
+        df_book = pd.read_csv('BOOK.csv', encoding = 'utf-8-sig')
         list_from_df_book = df_book.values.tolist()
 
         for i in range(len(df_book)):
@@ -1582,7 +1577,6 @@ def Rentwindow():
             ##예외 처리 추가
 
             try:
-            
                 selecteditem = rent_treeview.focus()
                 getValue = rent_treeview.item(selecteditem).get('values')
                 
@@ -1598,12 +1592,12 @@ def Rentwindow():
                     
                     df_rent.to_csv("RENT.csv",index = False,encoding = 'cp949')
 
-                    df_user = pd.read_csv('USER1.csv',encoding = 'cp949')
-                    df_book = pd.read_csv('Book.csv',encoding = 'cp949')
+                    df_user = pd.read_csv('USER.csv',encoding = 'cp949')
+                    df_book = pd.read_csv('BOOK.csv',encoding = 'utf-8')
 
                     cnt_index = df_user.index[(df_user['NAME']) == (getValue[1])]
                     df_user['RENT_CNT'][cnt_index[0]] -= 1
-                    df_user.to_csv("USER1.csv",index = False, encoding = 'cp949')
+                    df_user.to_csv("USER.csv",index = False, encoding = 'cp949')
 
                     df_book_index = df_book.index[(df_book['TITLE'] == getValue[0])]
                         
