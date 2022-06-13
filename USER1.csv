@@ -1,9 +1,4 @@
-﻿PHONE,NAME,BIRTH,GENDER,MAIL,REG_DATE,OUT_DATE,RENT_CNT,DO_OUT
-010-1234-4567,이창우,2000.09.23,1,apxkzmfh789@naver.com,2022.05.28,2022-06-05,0,1
-010-1110-4567,최종학,2000.1.31,0,apxkzmfh789@naver.com,2022.05.29,2022-06-06,0,1
-011-1234-4567,이창우,2000.09.23,0,apxkzmfh789@naver.com,2022.05.29,2022-06-06,0,0
-010-2664-8399,최종학,2000.3.20,1,cj855695@asjdofj.com,2022.05.30,2022-06-06,1,0
-010-3122-8556,안녕,1994.1.1,0,sdf@naver.com,2022.06.04,2022-06-06,0,1
-010-2664-8398,sdfs,1990.3.1,0,sfsdf@naver.com,2022.06.06,,0,0
-442-4-2441,2hk,1990.1.1,0,dfhd@naver.com,2022.06.06,,0,0
-045-2525-2252,sdfs,1990.1.1,1,24@naver.com,2022.06.06,,0,0
+﻿Unnamed: 0,PHONE,NAME,BIRTH,GENDER,MAIL,REG_DATE,OUT_DATE,RENT_CNT,DO_OUT,PICTURE
+0,010-2664-8556,최종학,2000-03-20,1,cj855695@hanmail.net,2022-06-12 14:55:06,,0,0,C:/Users/cjh00/Pictures/Screenshots/스크린샷(2).png
+1,343-0980-9080,sdf,1980-01-01,1,cj8466@empas.com,2022-06-12 14:57:51,,0,0,C:/Users/cjh00/Desktop/테스트_02데모데이터/01_신규등록내용/user01.jpeg
+2,1-16-123,k,1980-01-01,1,ff@gmail.com,2022-06-12 14:58:43,,0,0,C:/Users/cjh00/Desktop/테스트_02데모데이터/01_신규등록내용/user02.jpg
