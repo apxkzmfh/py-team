@@ -1404,7 +1404,7 @@ def Rentwindow():
                  
                                 else : # 도서 선택 -> 유저 선택 버튼 누르고 대여취소, response
                                     messagebox.showinfo('대여 취소','대여가 취소되었습니다.', parent = BUrent_info)
-                            
+                                
                         except:
                             messagebox.showinfo('경고','도서를 선택해주세요!', parent = BUrent_info)
                 
@@ -1470,9 +1470,10 @@ def Rentwindow():
 
                     df_book = pd.read_csv('BOOK.csv', encoding = 'utf-8-sig')
                     list_from_df_book = df_book.values.tolist()
-
+                    
                     # 대여(도서) 도서 리스트
                     for i in range(len(df_book)):
+                        list_from_df_book[i] = list_from_df_book[i][:2] + list_from_df_book[i][6:7] + list_from_df_book[i][5:6] + list_from_df_book[i][2:4] + list_from_df_book[i][4:5]
                         Btreeview.insert("", "end", text = "", values=list_from_df_book[i], iid = i)
                         Btreeview.bind("<Double-1>",Rent_User_Selected)
                     BUrent_info.focus_set()
