@@ -114,11 +114,13 @@ def Userwindow(): # 메인화면에서 회원 클릭
     def Usersearch(): # 회원 조회 클릭
         def User_Show(event):   #treeview로 조회된 회원중 한명을 더블클릭 했을 때
             check = 0   #중복체크 확인용
+            recheck = 0 #중복체크 다시할때
             def Change():   #회원 수정
                 #getValue 여기도 있음(더블클릭한 treeview 값)
                 #PHONE을 인덱스로 불러온 df_user 존재
                 nonlocal df_user
                 nonlocal check
+                nonlocal recheck
                 change_phone = Uphone_value1.get() +'-' + Uphone_value2.get() + '-' + Uphone_value3.get()
                 change_birth = year_text.get() + '-' + month_text.get() +'-' + day_text.get()
                 change_mail = mail_text.get() + '@' + mail_text2.get()
@@ -150,8 +152,13 @@ def Userwindow(): # 메인화면에서 회원 클릭
                 df_user.loc[changeindex,'MAIL'] = change_mail
                 df_user.loc[changeindex,'PICTURE'] = pic_text.get()
                 df_user_notme = df_user.drop(changeindex, inplace = False)        #선택했던 전화번호에 해당하는 행은 제외하고 비교하기 위해(선택한 회원의 전화번호는 안바뀔 수도 있으므로)
- 
-                
+
+
+                #대출한회원도 수정
+                df_rent = pd.read_csv('RENT.csv', encoding = 'UTF-8')
+                cindex = df_rent.index[df_rent["PHONE"] == getValue[2]]
+                df_rent.loc[cindex,'PHONE'] = change_phone
+                df_rent.loc[cindex,'NAME'] = name
     
                 if not name_text.get() or name_text.get().isspace() or len(name_text.get()) > 10 :
                     messagebox.showinfo("회원 수정 실패", "이름을 입력하시오(1~10자)", parent=user_show)
@@ -163,11 +170,16 @@ def Userwindow(): # 메인화면에서 회원 클릭
                     messagebox.showinfo("회원 수정 실패", "사진을 입력하시오", parent=user_show)
                 elif check == 0:
                     messagebox.showinfo("회원 수정 실패", "중복 확인 하세요", parent=user_show)
+                elif recheck != change_phone :
+                    messagebox.showinfo("회원 수정 실패", "중복 확인 하세요", parent=user_show)
+                    check = 0
+                    
                 else:
                     messagebox.showinfo("회원 수정 성공", "수정이 완료되었습니다.", parent=user_show)
                     df_user = df_user.set_index('Unnamed: 0')
                     df_user = df_user.reset_index()
                     df_user.to_csv("USER.csv", index = False, encoding= 'UTF-8-sig')
+                    df_rent.to_csv("RENT.csv", index = False, encoding = 'UTF-8-sig')
                     user_show.destroy()
                     Usersearch()
                 df_user = pd.read_csv('USER.csv', encoding = 'UTF-8', index_col = 'PHONE')
@@ -178,6 +190,7 @@ def Userwindow(): # 메인화면에서 회원 클릭
                     messagebox.showinfo("중복 확인 실패", "번호를 입력하세요", parent = user_show)
                     return
                 nonlocal check
+                nonlocal recheck
                 change_phone = Uphone_value1.get() +'-' + Uphone_value2.get() + '-' + Uphone_value3.get()
                 df_user_notme = df_user.drop(getValue[2], inplace = False)
                 df_user_notme = df_user_notme.reset_index()
@@ -186,15 +199,12 @@ def Userwindow(): # 메인화면에서 회원 클릭
                 else:
                     if getValue[2] == change_phone :
                         messagebox.showinfo("중복 확인 완료", "변경되지 않은 번호입니다.", parent=user_show)
-                        Uphone_value1.config(state = "readonly")
-                        Uphone_value2.config(state = "readonly")
-                        Uphone_value3.config(state = "readonly")
+                        
                     else :
                         messagebox.showinfo("중복 확인 완료", "수정 가능한 번호입니다.", parent=user_show)
-                        Uphone_value1.config(state = "readonly")
-                        Uphone_value2.config(state = "readonly")
-                        Uphone_value3.config(state = "readonly")
+                        
                     check = 1
+                    recheck = change_phone
 
                 
             def Delete():   #회원 삭제
@@ -534,8 +544,10 @@ def Userwindow(): # 메인화면에서 회원 클릭
         
     def Useradd():  #회원 등록(조회, 등록중 등록)
         existcheck = 0              #중복 체크 했는지 안했는지 확인용 변수(하면 1)
-        
+        reexistcheck = 0
         def Add():
+            nonlocal existcheck
+            
             if not Uname_text1.get() or Uname_text1.get().isspace() or len(Uname_text1.get()) > 10:
                 messagebox.showinfo("입력 오류", "이름을 입력하시오(1~10자)",parent = user_add)
                 return
@@ -581,6 +593,10 @@ def Userwindow(): # 메인화면에서 회원 클릭
             if existcheck == 0:
                 messagebox.showinfo("입력 오류", "중복 확인 하십시오",parent = user_add)
                 return
+            if reexistcheck != Uphone:
+                messagebox.showinfo("입력 오류", "중복 확인 하십시오",parent = user_add)
+                existcheck = 0
+                return
             try:
                 df_user = pd.read_csv('USER.csv', encoding = 'UTF-8')
                 add_index = df_user.index[df_user['PHONE'] == Uphone]
@@ -613,6 +629,7 @@ def Userwindow(): # 메인화면에서 회원 클릭
                 Useradd()
         def Exist_check():  #중복 체크
             nonlocal existcheck         #상위 함수에 있는 중복 확인 체크용 변수
+            nonlocal reexistcheck
             try:
                 df_user = pd.read_csv('USER.csv', encoding = 'UTF-8')
                 Uphone = Uphone_text1.get() +'-' + Uphone_text2.get() + '-' + Uphone_text3.get()
@@ -622,9 +639,7 @@ def Userwindow(): # 메인화면에서 회원 클릭
                     if (df_user.loc[readd_index]['DO_OUT'] == 1).all():
                         existcheck = 1
                         messagebox.showinfo("중복 확인 완료", "탈퇴한 회원입니다.",parent = user_add)           #회원 재가입 구현
-                        Uphone_text1.configure(state='disabled')
-                        Uphone_text2.configure(state='disabled')
-                        Uphone_text3.configure(state='disabled')
+                        reexistcheck = Uphone
                     else :
                         messagebox.showinfo("중복된 전화번호", "이미 등록된 회원입니다.",parent = user_add)
                 else :
@@ -633,9 +648,7 @@ def Userwindow(): # 메인화면에서 회원 클릭
                         return
                     else:
                         messagebox.showinfo("중복 확인 완료", "등록할 수 있는 회원입니다.",parent = user_add)
-                        Uphone_text1.configure(state='disabled')
-                        Uphone_text2.configure(state='disabled')
-                        Uphone_text3.configure(state='disabled')
+                        reexistcheck = Uphone
                         existcheck = 1
             except:
                 if not Uphone_text1.get() or not Uphone_text2.get() or not Uphone_text3.get() :
@@ -643,10 +656,9 @@ def Userwindow(): # 메인화면에서 회원 클릭
                     return
                 else:
                     messagebox.showinfo("중복 확인 완료", "등록할 수 있는 회원입니다.",parent = user_add)
-                    Uphone_text1.configure(state='disabled')
-                    Uphone_text2.configure(state='disabled')
-                    Uphone_text3.configure(state='disabled')
+                    
                     existcheck = 1
+                    reexistcheck = Uphone
 
                     
         def combo(event) : #메일 직접 입력
@@ -940,7 +952,7 @@ def Bookwindow():
                 changebook.append(BtextISBN.get())
                         
             def change_book(): #도서수정
-                if BtextISBN.get()=='' or Btextname.get()=='' or Btextauthor.get()=='' or Btextpubli.get()=='' or Btextprice.get()=='' or BtextURL.get()=='' or Btextexp.get()=='' or Btextpicture.get()=='':
+                if BtextISBN.get()=='' or Btextname.get()=='' or Btextauthor.get()=='' or Btextpubli.get()=='' or Btextprice.get()=='' or BtextURL.get()=='' or Btextexp.get("0.0", "end")=='' or Btextpicture.get()=='':
                 #도서 정보가 모두 입력되지 않으면 팝업창
                     messagebox.showinfo("경고,", "도서 정보를 모두 입력해주세요.", parent = bookshow)
                     return 0
@@ -956,7 +968,7 @@ def Bookwindow():
                 if len(Btextpubli.get()) > 30:
                     messagebox.showinfo("경고", "출판사를 다시 입력하시오(1~30자)", parent = bookshow)
                     return 0
-                if len(Btextexp.get()) > 255:
+                if len(Btextexp.get("0.0", "end")) > 255:
                     messagebox.showinfo("경고", "도서설명을 다시 입력하시오(1~255자)", parent = bookshow)
                     return 0
                 if not Btextpicture.get() :
@@ -986,7 +998,7 @@ def Bookwindow():
                         messagebox.showinfo("경고", "가격을 정수 형태로 입력해주세요.(ex : 8000) ", parent = bookshow)
                         return 0
                     readd_book = {"ISBN" : isbn, "TITLE" : Btextname.get(), "AUTHOR" : Btextauthor.get(), "PRICE" : price,
-                                  "URL" : BtextURL.get(), "RENT" : rent, "PUB" : Btextpubli.get(), "PICTURE" :  Btextpicture.get(), "EXPLANZTION" : Btextexp.get()}
+                                  "URL" : BtextURL.get(), "RENT" : rent, "PUB" : Btextpubli.get(), "PICTURE" :  Btextpicture.get(), "EXPLANZTION" : Btextexp.get("0.0", "end")}
                     try:
                         df_book = df_book.append(readd_book, ignore_index=True)
                         df_book.to_csv("BOOK.csv", index = False, encoding= 'UTF-8-sig')
@@ -1048,53 +1060,53 @@ def Bookwindow():
             
             try:
                 BlabelISBN = Label(book_show_info, text="ISBN : ", fg = "#203864", bg = "white")
-                BlabelISBN.grid(row=2, column=0, padx=30, pady = 7)
+                BlabelISBN.grid(row=2, column=0, padx=30, pady = 5)
                 BtextISBN = Entry(book_show_info)
                 BtextISBN.insert(0, getValue[0])
-                BtextISBN.grid(row=2, column=1, ipadx=70, pady = 7)
+                BtextISBN.grid(row=2, column=1, ipadx=70, pady = 5)
                 BtextISBN.config(state = "readonly")
     
                 Blabelname = Label(book_show_info, text="도서명 : ", fg = "#203864", bg = "white")
                 Btextname = Entry(book_show_info)
                 Btextname.insert(0, getValue[1])
-                Blabelname.grid(row=3, column=0, padx=30, pady = 7)
-                Btextname.grid(row=3, column=1, ipadx=70, pady = 7)
+                Blabelname.grid(row=3, column=0, padx=30, pady = 5)
+                Btextname.grid(row=3, column=1, ipadx=70, pady = 5)
 
                 Blabelauthor = Label(book_show_info, text="저자 : ", fg = "#203864", bg = "white")
                 Btextauthor = Entry(book_show_info)
                 Btextauthor.insert(0, getValue[2])
-                Blabelauthor.grid(row=4, column=0, padx=30, pady = 7)
-                Btextauthor.grid(row=4, column=1, ipadx=70, pady = 7)
+                Blabelauthor.grid(row=4, column=0, padx=30, pady = 5)
+                Btextauthor.grid(row=4, column=1, ipadx=70, pady = 5)
 
                 Blabelpubli = Label(book_show_info, text="출판사 : ", fg = "#203864", bg = "white")
                 Btextpubli = Entry(book_show_info)
                 Btextpubli.insert(0, getValue[6])
-                Blabelpubli.grid(row=5, column=0, padx=30, pady = 7)
-                Btextpubli.grid(row=5, column=1, ipadx=70, pady = 7)
+                Blabelpubli.grid(row=5, column=0, padx=30, pady = 5)
+                Btextpubli.grid(row=5, column=1, ipadx=70, pady = 5)
 
                 Blabelprice = Label(book_show_info, text="가격: ", fg = "#203864", bg = "white")
                 Btextprice = Entry(book_show_info)
                 Btextprice.insert(0, getValue[3])
-                Blabelprice.grid(row=6, column=0, padx=30, pady = 7)
-                Btextprice.grid(row=6, column=1, ipadx=70, pady = 7)
+                Blabelprice.grid(row=6, column=0, padx=30, pady = 5)
+                Btextprice.grid(row=6, column=1, ipadx=70, pady = 5)
 
                 BlabelURL = Label(book_show_info, text="관련 URL : ", fg = "#203864", bg = "white") 
                 BtextURL = Entry(book_show_info)
                 BtextURL.insert(0, getValue[4])
-                BlabelURL.grid(row=7, column=0, padx=30, pady = 7)
-                BtextURL.grid(row=7, column=1, ipadx=70, pady = 7)
+                BlabelURL.grid(row=7, column=0, padx=30, pady = 5)
+                BtextURL.grid(row=7, column=1, ipadx=70, pady = 5)
  
                 Blabelpicture = Label(book_show_info, text = "도서 사진 : ", fg = "#203864", bg = "white")
                 Btextpicture = Entry(book_show_info)
                 Btextpicture.insert(0, getValue[7])
-                Blabelpicture.grid(row=8, column=0, padx=30, pady = 7)
-                Btextpicture.grid(row=8, column=1, ipadx=70, pady = 7)
+                Blabelpicture.grid(row=8, column=0, padx=30, pady = 5)
+                Btextpicture.grid(row=8, column=1, ipadx=70, pady = 5)
 
                 Blabelexp = Label(book_show_info, text = "도서 설명 : ", fg = "#203864", bg = "white")
-                Btextexp = Entry(book_show_info)
-                Btextexp.insert(0, getValue[8])
-                Blabelexp.grid(row=9, column=0, padx=30, pady = 7)
-                Btextexp.grid(row=9, column=1, ipadx=70, pady = 7)
+                Btextexp = Text(book_show_info, width = 40, height=4)
+                Btextexp.insert(0.0, getValue[8])
+                Blabelexp.grid(row=9, column=0, padx=30, pady = 5)
+                Btextexp.grid(row=9, column=1, pady = 5)
             except IndexError:
                 messagebox.showinfo("조회 오류", "도서 목록을 클릭해 주세요.", parent = book_info )
                 bookshow.destroy()
